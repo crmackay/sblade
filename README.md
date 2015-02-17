@@ -5,7 +5,7 @@ a semi-local alignment and bayesian probability based high-throughput sequence a
 
 ### find your binaries here:
 
-### compile to go code yourself:
+### compile the `go` code yourself:
 
 ## How to Use:
 
