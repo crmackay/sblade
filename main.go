@@ -78,7 +78,7 @@ func main() {
 	// wait until the are all done
 
 	//bio.Testfastq()
-	//bio.Testalign()
+	bio.Testalign()
 	bio.Testfastqwriter()
 
 	fmt.Println("this is the main function")
