@@ -13,42 +13,16 @@ func work (input chan FASTARead, ouput chan FASTARead) {
     fmt.Println("Starting Worker:")
 }*/
 
-// this function uses the `select` method to keep IO to just one goroutine
-// this combined with our CPU accounting allows for fast loading and offloading
-// of data to disk, while ensuring that that maximum CPU utilization is happening
-
-/*func IOSwitch (inFile Path, outFile Path, input chan FASTARead, output chan FASTARead) {
-
-    file := FASTQFile(inFile)
-    fmt.Println("Starting IO (writer/reader):")
-    fileCompleted := false
-    nextRead, err := file.Readline()
-        //if err
-    for fileCompleted == false {
-        select {
-            //when read channel is not full put next read in
-            case reads <- nextRead:
-                nextRead, err = file.Readline()
-                    if err.(
-            // when read channel is full, purge the output channel to disk
-            default:
-                outputSize := len(output)
-                for i := 0; i < outputSize ; i++ {
-                    nextProduct := <- output
-                    nextProduct.write(outFile)
-                }
-        }
-    }
-
-
-
-
-}
-*/
 
 func main() {
 
-	//totalCPUS := 4
+    // find the number of logical CPUs on the system
+
+	//totalCPUS := runtime.NumCPU()
+	
+	// set the golang runtime to use all the available processors
+	
+	/// runtime.GOMAXPROCS(totalCPUS)
 
 	//CPUWorkers := totalCPUS - 1
 
