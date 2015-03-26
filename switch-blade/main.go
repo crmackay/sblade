@@ -15,26 +15,22 @@ func work (input chan FASTARead, ouput chan FASTARead) {
 
 
 func main() {
-
+    
+    // TODO parse command line arguments
+    
     // find the number of logical CPUs on the system
 
-	//totalCPUS := runtime.NumCPU()
+	totalCPUS := runtime.NumCPU()
 	
 	// set the golang runtime to use all the available processors
 	
-	/// runtime.GOMAXPROCS(totalCPUS)
+	runtime.GOMAXPROCS(totalCPUS)
 
-	//CPUWorkers := totalCPUS - 1
+	CPUWorkers := totalCPUS - 1
 
-	//TEMP set number of CPUs to
+	rawReads := chan FASTARead
 
-	//rawReads := chan FASTARead
-
-	//processedReads := chan FASTARead
-
-	// TODO parse command line arguments
-
-	// TODO set number of CPUs
+	processedReads := chan FASTARead
 
 	// TODO set path to input file
 
