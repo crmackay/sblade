@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	bio "github.com/crmackay/gobioinfo"
+	"runtime"
 )
 
 /*
@@ -28,9 +29,9 @@ func main() {
 
 	CPUWorkers := totalCPUS - 1
 
-	rawReads := chan FASTARead
+	rawReads := make(chan bio.FASTQRead, 1000)
 
-	processedReads := chan FASTARead
+	processedReads := make(chan bio.FASTQRead, 1000)
 
 	// TODO set path to input file
 
@@ -48,8 +49,6 @@ func main() {
 	// wait until the are all done
 
 	//bio.Testfastq()
-	bio.Testalign()
-	bio.Testfastqwriter()
 
 	fmt.Println("this is the main function")
 }

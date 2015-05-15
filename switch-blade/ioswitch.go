@@ -22,7 +22,8 @@ func (r *TrimmedFASTQRead) Seperate (t bio.FASTQRead, f bio.FASTQRead) {
 
 }
 
-func IOSwitch(inFile string, outFile string, input chan bio.FASTQRead, output chan bio.FASTQRead) {
+func IOSwitch(inFile string, outFile string, input chan bio.FASTQRead, output 
+        chan bio.FASTQRead) {
     
     reader := bio.NewFASTQScanner(inFile)
     defer reader.Close()
@@ -30,7 +31,7 @@ func IOSwitch(inFile string, outFile string, input chan bio.FASTQRead, output ch
     cutWriter := bio.NewFASTQWriter(outFile)
     defer cutWriter.Close()
     
-    piecesWriter := bio.NewFASTQWriter(filepath.Dir(outFile)+"/removed_pieces.fastq")
+    fragmentWriter := bio.NewFASTQWriter(filepath.Dir(outFile)+"/removed_fragments.fastq")
     defer piecesWriter.Close()
     
     var newRead, doneRead bio.FASTQRead
@@ -41,6 +42,8 @@ func IOSwitch(inFile string, outFile string, input chan bio.FASTQRead, output ch
         for {
             
             newRead = reader.NextRead()
+            
+            //is the sequence attribute is empty, the whole read is likely empty, indicating that the end of the file was found
             
             if newRead.Sequence == "" {
                 
@@ -53,20 +56,19 @@ func IOSwitch(inFile string, outFile string, input chan bio.FASTQRead, output ch
             
             select{
             
-            case input <- newRead:
-                //input is not full, great fill it up!
+                case input <- newRead:
+                    //input is not full, great fill it up!
                 
-            default:
-                //once the input is full, drain the output
-                for i := 0; i < len(output); i++ {
-                    doneRead <- output
+                default:
+                    //once the input is full, drain the output
+                    for i := 0; i < len(output); i++ {
+                        doneRead <- output
                     
-                    cutRead, fragment := Seperate(doneRead)
+                        cutRead, fragment := Seperate(doneRead)
                     
-                        cutWriter.Write(cutRead)
-                        piecesWriter.Write(fragment)
+                            cutWriter.Write(cutRead)
+                            fragmentWriter.Write(fragment)
                     }
-                    
                 }
             }
         }
