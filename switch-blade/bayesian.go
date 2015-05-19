@@ -1,6 +1,6 @@
 /*Bayesian test for linker contamination
 
-Here we take a pairwise alignment structure produced by alignment.go, and
+Here we take a pairwise alignment structure produced by gobioinfo.align, and
 calculate the probabilities of the query sequence (the read) being present
 under two assumptions: (1) that it is a contaminant and (2) that
 it is a random sequence. These probabilities are calculated by factoring in
@@ -25,9 +25,60 @@ import (
 func baysTest(alignment PairWiseAlignment) bool {
 	var isLinker bool
 
+    errorPCR := errorRT + (errorDNAPol * NumPCRCycles)
+
+    /*
+    this should get cleaned up...perhaps by creating a collection of functions
+    */
+
+    //calculates the probability that a base is a contaminant given that it is an alignment match
+    //takes the PHRED score of the base as input and returns the probability
+    probContamOfMatch := func (phred float64) float64 {
+        
+        probMiscall := (10**(-pred/10)
+        probCorrcall := 1 - probMiscall
+        
+        prob := (errorPCR * probMiscall) + (probCorrcall * (1 - errorPCR)) + ((1/3) * probMiscall * errorPCR)
+        
+        return(prob)
+    }
+    
+    //calculates the probability that a base is a contaminant given that it is an alignment mismatch
+    //takes the PHRED score of the base as input and returns the probability
+    probContamOfMismatch := func (phred float64) float64 {
+        
+        probMiscall := (10**(-pred/10)
+        probCorrcall := 1 - probMiscall
+        
+        prob := ((1 - errorPCR) * probMiscall) + (probCorrcall * errorPCR) + ((2/3) * probMiscall * errorPCR)
+        
+        return(prob)
+    }
+    
+    //calculates the probability that a base is a contaminant given that is is an alignment InDel
+    //the PHRED score of the sequenced base does not matter here, and in fact might not exists
+    probContamOfIndel:= func () float64 {
+        
+        prob := errorPCR
+        
+        return(prob)
+    }
+    
+    
 	//parse CIGAR string
 
-	//calculate
+
+    // calculate P(Sequence|Linker)
+    
+    // calculate P(Sequence|Chance)
+    
+    // calculate P(Linker|Sequence)
+    
+    // calculate P(Chance|Sequence)
+    
+    // test P(L|S) > P(C|S)
+    
+    // return true of false
 
 	isLinker = true
 
