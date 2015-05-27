@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 	bio "github.com/crmackay/gobioinfo"
-	"runtime"
+	// "runtime"
 )
 
 /*

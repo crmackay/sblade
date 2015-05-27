@@ -1,10 +1,10 @@
-/*package main
+package main
 
 import (
 	"github.com/codegangsta/cli"
 	"os"
 )
-
+/*
 func ParseArgs() {
 	app := cli.NewApp()
 	app.Name = "Switch-Blade"

@@ -19,23 +19,25 @@ package main
 
 import (
 	"fmt"
+	"math"
 	bio "github.com/crmackay/gobioinfo"
+	"testing"
 )
 
-func baysTest(alignment PairWiseAlignment) bool {
-	var isLinker bool
+// takes a pairwise alignment struct and returns a boolean of whether the aligned sequence is judged to be a contaiminant based after factoring in the sequencing quality score and the degree of alignment to the known contaminant
+func LinkerTest(alignment bio.PairWiseAlignment, PCRDetails map[string]float64) bool {
+	var hasLinker bool
 
-    errorPCR := errorRT + (errorDNAPol * NumPCRCycles)
+    errorPCR := PCRDetails["RTError"] + 
+                (PCRDetails["DNAPolError"] * PCRDetails["NumPCRCycles"])
 
-    /*
-    this should get cleaned up...perhaps by creating a collection of functions
-    */
+    // TODO: this should get cleaned up...perhaps by creating a collection of functions, see: http://jordanorelli.com/post/42369331748/function-types-in-go-golang
 
     //calculates the probability that a base is a contaminant given that it is an alignment match
     //takes the PHRED score of the base as input and returns the probability
-    probContamOfMatch := func (phred float64) float64 {
+    probContamGivenMatch := func (phred float64) float64 {
         
-        probMiscall := (10**(-pred/10)
+        probMiscall := math.Pow(10, (-phred/10))
         probCorrcall := 1 - probMiscall
         
         prob := (errorPCR * probMiscall) + (probCorrcall * (1 - errorPCR)) + ((1/3) * probMiscall * errorPCR)
@@ -45,9 +47,9 @@ func baysTest(alignment PairWiseAlignment) bool {
     
     //calculates the probability that a base is a contaminant given that it is an alignment mismatch
     //takes the PHRED score of the base as input and returns the probability
-    probContamOfMismatch := func (phred float64) float64 {
+    probContamGivenMismatch := func (phred float64) float64 {
         
-        probMiscall := (10**(-pred/10)
+        probMiscall := math.Pow(10, (-phred/10))
         probCorrcall := 1 - probMiscall
         
         prob := ((1 - errorPCR) * probMiscall) + (probCorrcall * errorPCR) + ((2/3) * probMiscall * errorPCR)
@@ -57,7 +59,7 @@ func baysTest(alignment PairWiseAlignment) bool {
     
     //calculates the probability that a base is a contaminant given that is is an alignment InDel
     //the PHRED score of the sequenced base does not matter here, and in fact might not exists
-    probContamOfIndel:= func () float64 {
+    probContamGivenIndel:= func () float64 {
         
         prob := errorPCR
         
@@ -80,22 +82,22 @@ func baysTest(alignment PairWiseAlignment) bool {
     
     // return true of false
 
-	isLinker = true
+	hasLinker = true
 
-	return (isLinker)
+	return (hasLinker)
 }
 
 func Test() {
 
 	//SET GLOBAL PCR VARIABLES for testing
+    
+    PCRDetails := map[string]float64
 
-	rt_error_rate := config_details["RT_ERROR_RATE"]
+	PCRDetails["RTError"] = 0.0000003
 
-	dnapol_error_rate = config_details["DNAPol_ERROR_RATE"]
+	PCRDetails["DNAPolError"] = 0.000000001 
 
-	pcr_cyles = config_details["PCR_CYCLES"]
-
-	fastq = config_details["FASTQ"]
+	PCRDetails["NumPCRCycles"] = 20
 
 	prob_of_pcr_error = rt_error_rate + (dnapol_error_rate * pcr_cyles)
 
@@ -121,4 +123,7 @@ func Test() {
 	result := baysTest(alignment)
 	fmt.Println(result)
 
+}
+
+func TestLinkerTest(t *testing.T) {
 }

@@ -22,8 +22,7 @@ func (r *TrimmedFASTQRead) Seperate (t bio.FASTQRead, f bio.FASTQRead) {
 
 }
 
-func IOSwitch(inFile string, outFile string, input chan bio.FASTQRead, output 
-        chan bio.FASTQRead) {
+func IOSwitch(inFile string, outFile string, input chan bio.FASTQRead, output chan bio.FASTQRead) {
     
     reader := bio.NewFASTQScanner(inFile)
     defer reader.Close()
@@ -72,7 +71,6 @@ func IOSwitch(inFile string, outFile string, input chan bio.FASTQRead, output
                 }
             }
         }
-}
 
 
 
