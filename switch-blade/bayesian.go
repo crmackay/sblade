@@ -15,7 +15,7 @@ question is a contaminant or not.
 
 */
 
-package main
+package switchblade
 
 import (
 	"fmt"
@@ -24,7 +24,9 @@ import (
 	"testing"
 )
 
-// takes a pairwise alignment struct and returns a boolean of whether the aligned sequence is judged to be a contaiminant based after factoring in the sequencing quality score and the degree of alignment to the known contaminant
+/* takes a pairwise alignment struct and returns a boolean of whether the 
+aligned sequence is judged to be a contaminant based after factoring in the 
+sequencing quality score and the degree of alignment to the known contaminant */
 func LinkerTest(alignment bio.PairWiseAlignment, PCRDetails map[string]float64) bool {
 	var hasLinker bool
 
@@ -38,6 +40,7 @@ func LinkerTest(alignment bio.PairWiseAlignment, PCRDetails map[string]float64) 
     probContamGivenMatch := func (phred float64) float64 {
         
         probMiscall := math.Pow(10, (-phred/10))
+        
         probCorrcall := 1 - probMiscall
         
         prob := (errorPCR * probMiscall) + (probCorrcall * (1 - errorPCR)) + ((1/3) * probMiscall * errorPCR)
@@ -50,6 +53,7 @@ func LinkerTest(alignment bio.PairWiseAlignment, PCRDetails map[string]float64) 
     probContamGivenMismatch := func (phred float64) float64 {
         
         probMiscall := math.Pow(10, (-phred/10))
+        
         probCorrcall := 1 - probMiscall
         
         prob := ((1 - errorPCR) * probMiscall) + (probCorrcall * errorPCR) + ((2/3) * probMiscall * errorPCR)
@@ -91,7 +95,7 @@ func Test() {
 
 	//SET GLOBAL PCR VARIABLES for testing
     
-    PCRDetails := map[string]float64
+    var PCRDetails map[string]float64
 
 	PCRDetails["RTError"] = 0.0000003
 
@@ -99,18 +103,12 @@ func Test() {
 
 	PCRDetails["NumPCRCycles"] = 20
 
-	prob_of_pcr_error = rt_error_rate + (dnapol_error_rate * pcr_cyles)
+	prob_of_pcr_error := PCRDetails["RTError"] + (PCRDetails["DNAPolError"] * PCRDetails["NumPCRCycles"])
 
-	prob_of_seq_given_adapter = 1
-
-	query = alignment.query
-
-	subject = alignment.subject
-
-	quality = alignment.query.quality
+	prob_of_seq_given_adapter := 1
 
 	testCIGAR := []string{"m", "m", "m", "m", "i", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m"}
-	alignment := PairWiseAlignment{Subject: "GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG",
+	alignment := bio.PairWiseAlignment{Subject: "GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG",
 		Query:                   "GCTAGGGAGGACGATGCGGTGGTGATGCTGCCACATACACTAAGAAGGTCCTGGACGCGTGTAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTGAA",
 		ExpandedCIGAR:           testCIGAR,
 		SubjectStart:            0,
@@ -120,9 +118,14 @@ func Test() {
 		GappedSubject:           "GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG",
 		GappedQuery:             "GTGT-AGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG",
 		AlignmentRepresentation: "|||| ||||||||||||||||||||||||||||||||||||"}
-	result := baysTest(alignment)
-	fmt.Println(result)
+		
+	query := alignment.Query
 
+	subject := alignment.Subject
+
+	quality := alignment.query.quality
+	result := LinkerTest(alignment)
+	fmt.Println(result)
 }
 
 func TestLinkerTest(t *testing.T) {

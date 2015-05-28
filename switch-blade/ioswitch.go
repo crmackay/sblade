@@ -1,9 +1,9 @@
-package main
+package switchblade
 
 import (
-        "fmt"
-        bio "github.com/crmackay/gobioinfo"
-        "path/filepath"
+        //"fmt"
+        //bio "github.com/crmackay/gobioinfo"
+        //"path/filepath"
 )
 
 
@@ -11,7 +11,7 @@ import (
 // this combined with our CPU accounting allows for fast loading and offloading
 // of data to disk, while ensuring that that maximum CPU utilization is happening
 
-
+/*
 func (r *TrimmedFASTQRead) Seperate (t bio.FASTQRead, f bio.FASTQRead) {
 
     trimPosition := len(r.Sequence) - len(r.CutSequence)
@@ -73,5 +73,5 @@ func IOSwitch(inFile string, outFile string, input chan bio.FASTQRead, output ch
         }
 
 
-
+*/
 
