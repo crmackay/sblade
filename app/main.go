@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	bio "github.com/crmackay/gobioinfo"
+	sblade "github.com/crmackay/SwitchBlade/switchblade"
 	// "runtime"
 )
 

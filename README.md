@@ -19,6 +19,16 @@ extractor
 
 ### compile the `go` code yourself:
 
+This assumes you have a set up GO environment. If not, se this [tutorial](test.com)
+
+Get the SwitchBlade code:
+
+`$ go get https://github.com/crmackay/SwitchBlade`
+
+Build the binary for your system and into your $GOPATH/bin
+
+switch to your home directoru
+
 ## How to Use:
 
 `$ switch-blade -l 'GTGTCAGTGATCGAT' -i rawreads.fastq -o output/trimmedreads.fastq -n 20`

@@ -91,7 +91,7 @@ func LinkerTest(alignment bio.PairWiseAlignment, PCRDetails map[string]float64) 
 	return (hasLinker)
 }
 
-func Test() {
+func TestLinkerTest(t *testing.T) {
 
 	//SET GLOBAL PCR VARIABLES for testing
     
@@ -104,29 +104,41 @@ func Test() {
 	PCRDetails["NumPCRCycles"] = 20
 
 	prob_of_pcr_error := PCRDetails["RTError"] + (PCRDetails["DNAPolError"] * PCRDetails["NumPCRCycles"])
+	
+	// create test alignment struct
 
-	prob_of_seq_given_adapter := 1
-
-	testCIGAR := []string{"m", "m", "m", "m", "i", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m"}
-	alignment := bio.PairWiseAlignment{Subject: "GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG",
-		Query:                   "GCTAGGGAGGACGATGCGGTGGTGATGCTGCCACATACACTAAGAAGGTCCTGGACGCGTGTAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTGAA",
-		ExpandedCIGAR:           testCIGAR,
+    testAlignment := bio.PairWiseAlignment{
+	    Subject: []rune("GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTGCTTG"),
+		Query:    []rune("GCTAGGGAGGACGATGCGGTGGTGATGCTGCCACATACACTAAGAAGGTCCTGGACGCGTGTAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTGAA"),
+		ExpandedCIGAR:           []string{"m", "m", "m", "m", "i", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "m", "j", "m", "j", "m", "m", "m", "m", "m", "m"},
 		SubjectStart:            0,
 		QueryStart:              58,
 		SubjectAlignLen:         40,
 		QueryAlignLen:           41,
-		GappedSubject:           "GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG",
+		GappedSubject:           "GTGTCAGTCACTTCCAGCGGTCGTATGCCGTC-T-TGCTTG",
 		GappedQuery:             "GTGT-AGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG",
-		AlignmentRepresentation: "|||| ||||||||||||||||||||||||||||||||||||"}
-		
-	query := alignment.Query
+		AlignmentRepresentation: "|||| ||||||||||||||||||||||||||| | ||||||"}
+	
+	// TODO Create a FASTQ Read (use the bioinfo package and four strings to do this)
 
-	subject := alignment.Subject
-
-	quality := alignment.query.quality
+	testQuery := bio.FASTQRead{
+        Id       : "test query",
+        Sequence: testAlignment.Query
+        Misc     : "",
+        Quality  QSequence{
+        	QualByte []rune
+            PHRED    []uint8
+            Encoding string
+            @@@FFFFFHHFFFFFHGHJ@FH?BFHF<HIGGIJIGJJGG=CCGGGHIC@=DDECHHED3>@CDCDCACC>>@A:9>99@)<>?@>@5)8<@CC:A>A<A
+            }
+	
+	}
+	
+    testSubject := testAlignments.Query
+	
 	result := LinkerTest(alignment)
+	
 	fmt.Println(result)
 }
 
-func TestLinkerTest(t *testing.T) {
 }
