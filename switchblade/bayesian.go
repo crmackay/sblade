@@ -1,4 +1,6 @@
-/*Bayesian test for linker contamination
+/*
+
+Bayesian test for linker contamination
 
 Here we take a pairwise alignment structure produced by gobioinfo.align, and
 calculate the probabilities of the query sequence (the read) being present
@@ -19,26 +21,24 @@ package switchblade
 
 import (
 	//"fmt"
-	bio "github.com/crmackay/gobioinfo"
+	//bio "github.com/crmackay/gobioinfo"
 	"math"
 )
 
-type linkerTestSet struct {
-	alignment  bio.PairWiseAlignment
-	query      bio.FASTQRead
-	subject    bio.NucleotideSequence
-	pcrDetails map[string]float64
-}
+/*
+LinkerTest takes a trimmedRead struct and returns a boolean of whether the
+last alignment (x.threePTrims[len(x)-1]) is judged to be a contaminant
+after factoring in the sequencing quality score of the query sequence and the
+degree of alignment to the known contaminant
+*/
+func threePLinkerTest(input *inProcessRead) bool {
 
-/* takes a pairwise alignment struct and returns a boolean of whether the
-aligned sequence is judged to be a contaminant based after factoring in the
-sequencing quality score and the degree of alignment to the known contaminant */
-func LinkerTest(input linkerTestSet) bool {
+	// get the last alignment struct found in the .threePTrims property of input
+	alignment := input.threePTrims[len(input.threePTrims)-1].alignment
+
+	// get the
 
 	var hasLinker bool
-
-	errorPCR := input.pcrDetails["RTError"] +
-		(input.pcrDetails["DNAPolError"] * input.pcrDetails["NumPCRCycles"])
 
 	// TODO: this should get cleaned up...perhaps by creating a collection of functions, see: http://jordanorelli.com/post/42369331748/function-types-in-go-golang
 
@@ -54,7 +54,7 @@ func LinkerTest(input linkerTestSet) bool {
 
 		probCorrcall = 1 - probMiscall
 
-		prob = (errorPCR * probMiscall) + (probCorrcall * (1 - errorPCR)) + ((1 / 3) * probMiscall * errorPCR)
+		prob = (pcrError * probMiscall) + (probCorrcall * (1 - pcrError)) + ((1 / 3) * probMiscall * pcrError)
 
 		return (prob)
 	}
@@ -71,7 +71,7 @@ func LinkerTest(input linkerTestSet) bool {
 
 		probCorrcall = 1 - probMiscall
 
-		prob = ((1 - errorPCR) * probMiscall) + (probCorrcall * errorPCR) + ((2 / 3) * probMiscall * errorPCR)
+		prob = ((1 - pcrError) * probMiscall) + (probCorrcall * pcrError) + ((2 / 3) * probMiscall * pcrError)
 
 		return (prob)
 	}
@@ -88,7 +88,7 @@ func LinkerTest(input linkerTestSet) bool {
 	//the PHRED score of the sequenced base does not matter here, and in fact might not exists
 	probContamGivenIndel := func() float64 {
 
-		prob := errorPCR
+		prob := pcrError
 
 		return (prob)
 	}
@@ -103,33 +103,37 @@ func LinkerTest(input linkerTestSet) bool {
 
 	var probSeqGivenChance float64 = 1
 
-	for _, elem := range input.alignment.ExpandedCIGAR {
+	for _, elem := range alignment.ExpandedCIGAR {
 
 		// track position along query string, especially to keep track in indels
 		queryPosition := 0
 
 		switch {
 		case elem == "m":
-			probSeqGivenContam *= probContamGivenMatch(input.query.PHRED[queryPosition])
+			probSeqGivenContam *= probContamGivenMatch(input.read.PHRED.Decoded[queryPosition])
 
 			probSeqGivenChance *= (1 / 4)
 
-			queryPosition += 1
+			queryPosition++
+
 		case elem == "x":
-			probSeqGivenContam *= probContamGivenMismatch(input.query.PHRED[queryPosition])
+			probSeqGivenContam *= probContamGivenMismatch(input.read.PHRED.Decoded[queryPosition])
 
 			probSeqGivenChance *= (3 / 4)
 
-			queryPosition += 1
+			queryPosition++
+
 		case elem == "n":
-			probSeqGivenContam *= probMiscall(input.query.PHRED[queryPosition])
-			queryPosition += 1
+			probSeqGivenContam *= probMiscall(input.read.PHRED.Decoded[queryPosition])
+			queryPosition++
+
 		case elem == "i":
 			probSeqGivenContam *= probContamGivenIndel()
 
 		case elem == "j":
 			probSeqGivenContam *= probContamGivenIndel()
-			queryPosition += 1
+			queryPosition++
+
 		}
 	}
 
@@ -144,6 +148,8 @@ func LinkerTest(input linkerTestSet) bool {
 
 	probChanceGivenSeq := ((1 - probContam) * probSeqGivenChance) /
 		((probSeqGivenContam * probContam) + (probSeqGivenChance * (1 - probContam)))
+
+		//fmt.Printf("probChanceGivenSeq: %20.400f", probChanceGivenSeq)
 
 		// test P(L|S) > P(C|S)
 

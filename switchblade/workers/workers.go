@@ -2,7 +2,7 @@ package main
 
 import (
     "fmt"
-    bio "github.com/crmackay/gobioingfo"
+    bio "github.com/crmackay/gobioinfo"
     
     
 struct TrimmedFASTQRead {

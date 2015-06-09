@@ -10,14 +10,6 @@ func TestLinkerTest(t *testing.T) {
 
 	//SET GLOBAL PCR VARIABLES for testing
 
-	PCRDetails := make(map[string]float64)
-
-	PCRDetails["RTError"] = 0.0000003
-
-	PCRDetails["DNAPolError"] = 0.000000001
-
-	PCRDetails["NumPCRCycles"] = 20
-
 	// create test alignment struct
 
 	testAlignment := bio.PairWiseAlignment{
@@ -35,25 +27,25 @@ func TestLinkerTest(t *testing.T) {
 	// TODO Create a FASTQ Read (use the bioinfo package and four strings to do this)
 
 	testQuery := bio.FASTQRead{
-		Id: "test query",
+		ID: "test query",
 		DNASequence: bio.DNASequence{
 			Sequence: testAlignment.Query,
 		},
 		Misc: "",
-		QSequence: bio.QSequence{
-			QualByteSequence: []rune("@@@FFFFFHHFFFFFHGHJ@FH?BFHF<HIGGIJIGJJGG=CCGGGHIC@=DDECHHED3>@CDCDCACC>>@A:9>99@)<>?@>@5)8<@CC:A>A<A"),
-			PHRED:            bio.DecodeQualByteSequence([]rune("@@@FFFFFHHFFFFFHGHJ@FH?BFHF<HIGGIJIGJJGG=CCGGGHIC@=DDECHHED3>@CDCDCACC>>@A:9>99@)<>?@>@5)8<@CC:A>A<A"), "Illumina 1.8"),
-			Encoding:         "Illumina 1.8",
+		PHRED: bio.PHRED{
+			Encoded:  []rune("@@@FFFFFHHFFFFFHGHJ@FH?BFHF<HIGGIJIGJJGG=CCGGGHIC@=DDECHHED3>@CDCDCACC>>@A:9>99@)<>?@>@5)8<@CC:A>A<A"),
+			Decoded:  nil,
+			Encoding: "illumina_1.8",
 		},
 	}
+	testQuery.PHRED.Decode()
 
-	testSubject := testAlignment.Query
+	testSubject := bio.DNASequence{Sequence: testAlignment.Subject}
 
-	testLinkerTestSet := linkerTestSet{
+	testLinkerTestSet := alignmentSet{
 		testAlignment,
 		testQuery,
 		testSubject,
-		PCRDetails,
 	}
 
 	result := LinkerTest(testLinkerTestSet)

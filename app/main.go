@@ -4,9 +4,10 @@ package main
 
 import (
 	"fmt"
-	bio "github.com/crmackay/gobioinfo"
 	sblade "github.com/crmackay/SwitchBlade/switchblade"
-	// "runtime"
+	bio "github.com/crmackay/gobioinfo"
+	"runtime"
+	"sync"
 )
 
 /*
@@ -15,17 +16,14 @@ func work (input chan FASTARead, ouput chan FASTARead) {
     fmt.Println("Starting Worker:")
 }*/
 
-
 func main() {
-    
-    // TODO parse command line arguments
-    
-    // find the number of logical CPUs on the system
 
+	// TODO parse command line arguments
+
+	// find the number of logical CPUs on the system
 	totalCPUS := runtime.NumCPU()
-	
+
 	// set the golang runtime to use all the available processors
-	
 	runtime.GOMAXPROCS(totalCPUS)
 
 	CPUWorkers := totalCPUS - 1
@@ -40,16 +38,20 @@ func main() {
 
 	// TODO start file parser
 
-	// TODO start file writer
-	//for c := 0; c < numberCPUs; c++ {
-	//go work(rawReads, processedReads)
-	//}
+	var wg sync.WaitGroup
 
-	// TODO start CPU# of workers
+	// start the single IO worker
+	go sblade.IOWork(inFile, outFile, rawReads, processedReads)
+	wg.Add(1)
+
+	// start CPU-1 number of workers
+	for c := 0; c < CPUWorkers; c++ {
+		go sblade.TrimWork(rawReads, processedReads)
+		wg.Add(1)
+	}
 
 	// wait until the are all done
-
-	//bio.Testfastq()
+	wg.Wait()
 
 	fmt.Println("this is the main function")
 }
