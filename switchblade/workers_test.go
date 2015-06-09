@@ -6,11 +6,10 @@ import (
 )
 
 func TestIOWorker(t *testing.T) {
-
+	fmt.Println("testing IOWorker")
 }
 
 func TestTrim3pWorker(t *testing.T) {
 
-	fmt.Println("put tests here!")
-
+	fmt.Println("testing Trim3pWorker")
 }

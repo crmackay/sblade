@@ -89,7 +89,7 @@ func (p *inProcessRead) getDataCSV() []string {
 
 func arrayToString(a []int) (s string) {
 
-	var newStrings []string
+	newStrings := make([]string, len(a))
 
 	for i := range a {
 		newStrings[i] = strconv.Itoa(int(a[i]))

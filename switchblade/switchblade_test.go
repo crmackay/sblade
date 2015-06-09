@@ -1,11 +1,12 @@
 package switchblade
 
 import (
-	"fmt"
-	bio "github.com/crmackay/gobioinfo"
-	"testing"
+//	"fmt"
+//	bio "github.com/crmackay/gobioinfo"
+//	"testing"
 )
 
+/*
 func TestLinkerTest(t *testing.T) {
 
 	//SET GLOBAL PCR VARIABLES for testing
@@ -69,3 +70,4 @@ func TestTrimRead(t *testing.T) {
 
 func TestCLI(t *testing.T) {
 }
+*/

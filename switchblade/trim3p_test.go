@@ -1,9 +1,10 @@
 package switchblade
 
 import (
+	"fmt"
 	"testing"
 )
 
-func TestalignAndTest3p(t *testing.T) {
-
+func TestAlignAndTest3p(t *testing.T) {
+	fmt.Println("testing alignAndTest3p")
 }
