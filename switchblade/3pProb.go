@@ -21,29 +21,30 @@ package switchblade
 
 import (
 	//"fmt"
-	//bio "github.com/crmackay/gobioinfo"
+	bio "github.com/crmackay/gobioinfo"
 	"math"
 )
 
 /*
-LinkerTest takes a trimmedRead struct and returns a boolean of whether the
+threePLinkerTest takes a trimmedRead struct and returns a boolean of whether the
 last alignment (x.threePTrims[len(x)-1]) is judged to be a contaminant
 after factoring in the sequencing quality score of the query sequence and the
 degree of alignment to the known contaminant
 */
-func threePLinkerTest(input *inProcessRead) bool {
+func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) bool {
 
-	// get the last alignment struct found in the .threePTrims property of input
-	alignment := input.threePTrims[len(input.threePTrims)-1].alignment
+	// get the segment of the read that is under consideration for this test:
+	// this the segment of the read that is part of the alignment
 
-	// get the
+	testStart := alignment.QueryStart
 
 	var hasLinker bool
 
 	// TODO: this should get cleaned up...perhaps by creating a collection of functions, see: http://jordanorelli.com/post/42369331748/function-types-in-go-golang
 
-	//calculates the probability that a base is a contaminant given that it is an alignment match
-	//takes the PHRED score of the base as input and returns the probability
+	// calculates the probability that a base is a contaminant given that it is
+	// an alignment match. It takes the PHRED score of the base of interest as
+	// input and returns the probability
 	probContamGivenMatch := func(phred uint8) float64 {
 
 		var probMiscall, probCorrcall, prob float64
@@ -59,8 +60,9 @@ func threePLinkerTest(input *inProcessRead) bool {
 		return (prob)
 	}
 
-	//calculates the probability that a base is a contaminant given that it is an alignment mismatch
-	//takes the PHRED score of the base as input and returns the probability
+	// calculates the probability that a base is a contaminant given that it is
+	// an alignment mismatch. It takes the PHRED score of the base as input and
+	// returns the probability
 	probContamGivenMismatch := func(phred uint8) float64 {
 
 		var probMiscall, probCorrcall, prob float64
@@ -106,29 +108,32 @@ func threePLinkerTest(input *inProcessRead) bool {
 	for _, elem := range alignment.ExpandedCIGAR {
 
 		// track position along query string, especially to keep track in indels
-		queryPosition := 0
+		queryPosition := testStart
 
 		switch {
 		case elem == "m":
-			probSeqGivenContam *= probContamGivenMatch(input.read.PHRED.Decoded[queryPosition])
+			probSeqGivenContam *= probContamGivenMatch(read.PHRED.Decoded[queryPosition])
 
 			probSeqGivenChance *= (1 / 4)
 
 			queryPosition++
 
 		case elem == "x":
-			probSeqGivenContam *= probContamGivenMismatch(input.read.PHRED.Decoded[queryPosition])
+			probSeqGivenContam *= probContamGivenMismatch(read.PHRED.Decoded[queryPosition])
 
 			probSeqGivenChance *= (3 / 4)
 
 			queryPosition++
 
 		case elem == "n":
-			probSeqGivenContam *= probMiscall(input.read.PHRED.Decoded[queryPosition])
+			probSeqGivenContam *= probMiscall(read.PHRED.Decoded[queryPosition])
 			queryPosition++
 
 		case elem == "i":
 			probSeqGivenContam *= probContamGivenIndel()
+			// in the case of a calculated deletion in the query seqeuence, we
+			// do not increment queryPosition, since we are effectively in a
+			// "gap" in the query string
 
 		case elem == "j":
 			probSeqGivenContam *= probContamGivenIndel()

@@ -1,6 +1,7 @@
 package switchblade
 
 import (
+	"errors"
 	bio "github.com/crmackay/gobioinfo"
 )
 
@@ -13,6 +14,7 @@ type inProcessRead struct {
 	read         *bio.FASTQRead   //query
 	threePLinker *bio.DNASequence //subject
 	threePTrims  []threePTrim
+	cutFrom      int
 	// TODO: add fivePTrims
 }
 
@@ -20,15 +22,22 @@ func newInProcessRead(r *bio.FASTQRead, t *bio.DNASequence) (i *inProcessRead) {
 	i = &inProcessRead{
 		read:         r,
 		threePLinker: t,
-		threePTrims:  nil,
+		threePTrims:  make([]threePTrim, 5), // TODO: is this okay? <--
 	}
 	return i
 }
 
-func (r *inProcessRead) trim3p() (p *bio.FASTQRead) {
-	trimFrom := r.threePTrims[len(r.threePTrims)-2].alignment.QueryStart
+func (r *inProcessRead) trim3p() (bio.FASTQRead, error) {
 
-	p = &bio.FASTQRead{
+	numTrims := len(r.threePTrims)
+
+	if r.threePTrims[numTrims-1].isLinker == true {
+		return bio.FASTQRead{}, errors.New("there was a problem with trimming")
+	}
+
+	trimFrom := r.threePTrims[numTrims-2].alignment.QueryStart
+
+	p := bio.FASTQRead{
 		DNASequence: bio.DNASequence{Sequence: r.read.Sequence[:trimFrom]},
 		ID:          r.read.ID,
 		Misc:        r.read.Misc,
@@ -39,14 +48,5 @@ func (r *inProcessRead) trim3p() (p *bio.FASTQRead) {
 		},
 	}
 
-	return p
+	return p, nil
 }
-
-var pcrDetails = map[string]float64{
-	"RTError":      0.0000003,
-	"DNAPolError":  0.000000001,
-	"NumPCRCycles": 20,
-}
-
-var pcrError = pcrDetails["RTError"] +
-	(pcrDetails["DNAPolError"] * pcrDetails["NumPCRCycles"])

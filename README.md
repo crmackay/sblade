@@ -19,15 +19,20 @@ extractor
 
 ### compile the `go` code yourself:
 
-This assumes you have a set up GO environment. If not, se this [tutorial](test.com)
+This assumes you have a set up GO environment. If not, you can see this [tutorial](test.com).
 
 Get the SwitchBlade code:
 
 `$ go get https://github.com/crmackay/SwitchBlade`
 
-Build the binary for your system and into your $GOPATH/bin
+Build the binary for your system and into your $GOPATH/bin:
 
-switch to your home directoru
+`$ go build $GOPATH/github.com/crmackay/SwitchBlade/`
+
+the `switchblade` binary should not be in $GOPATH/bin. If your GO environment is set up correctly the `switchblade` command should now be accessible to you via the command line (terminal, command prompt, etc.).
+
+To test this enter:
+`$ switchblade -h` which should bring up the switchblade help screen 
 
 ## How to Use:
 
@@ -36,5 +41,3 @@ switch to your home directoru
 
 
 ## Overview of Approach
-
-

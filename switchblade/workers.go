@@ -16,7 +16,6 @@ import (
 func Trim3pWorker(rawReads <-chan *bio.FASTQRead, finishedReads chan<- *bio.FASTQRead,
 	outputData chan<- []string, threePLinker *bio.DNASequence) {
 
-	// TODO: count reads, count of cuts, count of reads removed
 	for rawRead := range rawReads {
 
 		inProcessRead := newInProcessRead(rawRead, threePLinker)
@@ -27,13 +26,16 @@ func Trim3pWorker(rawReads <-chan *bio.FASTQRead, finishedReads chan<- *bio.FAST
 		for inProcessRead.threePTrims[len(inProcessRead.threePTrims)-1].isLinker == true || inProcessRead.threePTrims == nil {
 
 			// align and test
-			alignAndTest3p(inProcessRead)
+			//alignAndTest3p(inProcessRead)
 
 		}
 
-		finishedReads <- inProcessRead.trim3p()
+		finishedRead, data := process3p(inProcessRead)
 
-		outputData <- inProcessRead.getDataCSV()
+		finishedReads <- &finishedRead
+
+		outputData <- data
+
 	}
 
 	close(finishedReads)
@@ -86,17 +88,15 @@ loop:
 		//input is not full, great fill it up!
 		case rawReads <- newRead:
 
-		//once the input is full, drain the output
+		//once the input is full, drain the two output channels
 		default:
 			currenChanLen := len(finishedReads)
+
 			for i := 0; i < currenChanLen; i++ {
-				doneRead := <-finishedReads
 
-				doneWriter.Write(doneRead)
+				doneWriter.Write(<-finishedReads)
 
-				doneData := <-outputData
-
-				dataWriter.WriteAll([][]string{doneData})
+				dataWriter.WriteAll([][]string{<-outputData})
 
 			}
 		}

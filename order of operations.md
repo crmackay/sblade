@@ -1,0 +1,16 @@
+- io-worker:
+    - parse FASTQ
+    - put reads into channel
+- processing worker
+    - align 3p linker
+    - test isContaminant?
+    - if yes:
+        - align again
+        - test again
+    - if no:
+        - put final read in read structure
+        - put into output channel
+- io-worker
+    - take final read structure:
+        - extract data and write to file
+        - extract data and write to file
