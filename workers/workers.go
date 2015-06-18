@@ -3,8 +3,8 @@ package switchblade
 import (
 	"encoding/csv"
 	"fmt"
-	tp "github.com/crmackay/SwitchBlade/switchblade/threeprime"
 	bio "github.com/crmackay/gobioinfo"
+	tp "github.com/crmackay/switchblade/threeprime"
 	"os"
 	"unicode/utf8"
 	//"path/filepath"

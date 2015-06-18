@@ -1,4 +1,4 @@
-package switchblade
+package config
 
 import (
 //"github.com/codegangsta/cli"

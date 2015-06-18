@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	bio "github.com/crmackay/gobioinfo"
+	sw "github.com/crmackay/switchblade"
 	"testing"
 )
 
@@ -47,7 +48,7 @@ func TestProcess3p(t *testing.T) {
 	}
 
 	for _, test := range testSuite {
-		resultRead, _ := process3p(newInProcessRead(&test.read, &subject))
+		resultRead, _ := process3p(sw.NewInProcessRead(&test.read, &subject))
 		fmt.Println("expected result:\t", test.result)
 		fmt.Println("actualy result:\t\t", string(resultRead.Sequence))
 

@@ -19,8 +19,9 @@ package switchblade
 
 import (
 	//"fmt"
-	sw "github.com/crmackay/SwitchBlade/switchblade"
 	bio "github.com/crmackay/gobioinfo"
+	//sw "github.com/crmackay/switchblade"
+	conf "github.com/crmackay/switchblade/config"
 	"math"
 )
 
@@ -54,9 +55,9 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 		//	fmt.Println("probMiscall: ", probMiscall)
 		probCorrcall = 1 - probMiscall
 		//	fmt.Println("probCorrcall: ", probCorrcall)
-		prob = (probCorrcall * (1 - pcrError)) +
-			((float64(2) / 3) * pcrError * probMiscall) +
-			((float64(1) / 3) * pcrError * probCorrcall)
+		prob = (probCorrcall * (1 - conf.PCRError)) +
+			((float64(2) / 3) * conf.PCRError * probMiscall) +
+			((float64(1) / 3) * conf.PCRError * probCorrcall)
 
 		return (prob)
 	}
@@ -67,7 +68,7 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 	probContamGivenMismatch := func(phred uint8) float64 {
 
 		var probMiscall, probCorrcall, prob float64
-		//	fmt.Println("pcr error: ", pcrError)
+		//	fmt.Println("pcr error: ", conf.PCRError)
 		phred64 := float64(phred)
 		//	fmt.Println("phred: ", phred64)
 		probMiscall = math.Pow(10, (-phred64 / 10))
@@ -75,15 +76,15 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 		probCorrcall = 1 - probMiscall
 		//	fmt.Println("probCorrcall: ", probCorrcall)
 
-		//	fmt.Println("probMiscall * (1 - pcrError): ", probMiscall*(1-pcrError))
+		//	fmt.Println("probMiscall * (1 - conf.PCRError): ", probMiscall*(1-conf.PCRError))
 
-		//	fmt.Println("(1 / 3) * pcrError * probCorrcall: ", (1/3)*pcrError*probCorrcall)
+		//	fmt.Println("(1 / 3) * conf.PCRError * probCorrcall: ", (1/3)*conf.PCRError*probCorrcall)
 
-		//	fmt.Println("(2 / 3) * pcrError * probMiscall: ", (2/3)*pcrError*probMiscall)
+		//	fmt.Println("(2 / 3) * conf.PCRError * probMiscall: ", (2/3)*conf.PCRError*probMiscall)
 
-		prob = (probMiscall * (1 - sw.PcrError)) +
-			((float64(1) / 3) * pcrError * probCorrcall) +
-			((float64(2) / 3) * pcrError * probMiscall)
+		prob = (probMiscall * (1 - conf.PCRError)) +
+			((float64(1) / 3) * conf.PCRError * probCorrcall) +
+			((float64(2) / 3) * conf.PCRError * probMiscall)
 
 		//	fmt.Println("probContamGivenMismatch: ", prob)
 		return (prob)
@@ -101,7 +102,7 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 	// the PHRED score of the sequenced base does not matter here, and in fact might not exists
 	probContamGivenIndel := func() float64 {
 
-		prob := pcrError
+		prob := conf.PCRError
 
 		return (prob)
 	}

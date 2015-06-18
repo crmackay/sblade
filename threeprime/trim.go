@@ -4,26 +4,28 @@ import (
 	//"errors"
 	"fmt"
 	bio "github.com/crmackay/gobioinfo"
+	sw "github.com/crmackay/switchblade"
+	data "github.com/crmackay/switchblade/research"
 )
 
-func next3pAlign(r *inProcessRead) bool {
+func next3pAlign(r *sw.InProcessRead) bool {
 
 	var atEnd bool
 
-	alignmentNum := len(r.threePTrims)
+	alignmentNum := len(r.ThreePTrims)
 	var newAlignment bio.PairWiseAlignment
 
 	if alignmentNum == 0 {
 		//run the first alignment
-		newAlignment = r.read.Sequence.Align(r.threePLinker.Sequence)
+		newAlignment = r.Read.Sequence.Align(r.ThreePLinker.Sequence)
 
 	} else {
 
 		// find where the last alignment started and set that to where this alignment ends
-		alignTo := r.threePTrims[alignmentNum-1].alignment.QueryStart
+		alignTo := r.ThreePTrims[alignmentNum-1].Alignment.QueryStart
 		if alignTo > 23 {
 			// run next alignment
-			newAlignment = r.read.Sequence[:alignTo].Align(r.threePLinker.Sequence)
+			newAlignment = r.Read.Sequence[:alignTo].Align(r.ThreePLinker.Sequence)
 		} else {
 			atEnd = true
 			return atEnd
@@ -31,26 +33,26 @@ func next3pAlign(r *inProcessRead) bool {
 
 	}
 	// add the new alignment to the input struct
-	r.threePTrims = append(r.threePTrims, threePTrim{alignment: newAlignment})
+	r.ThreePTrims = append(r.ThreePTrims, sw.ThreePTrim{Alignment: newAlignment})
 	atEnd = false
 	return atEnd
 }
 
 // takes a read and tests the last alignment for a contaminant
-func next3pAlignTest(r *inProcessRead) bool {
+func next3pAlignTest(r *sw.InProcessRead) bool {
 
 	// run the bayesian probability test on the new alignment, and record that value
-	newAlignment := &r.threePTrims[len(r.threePTrims)-1].alignment
+	newAlignment := &r.ThreePTrims[len(r.ThreePTrims)-1].Alignment
 
-	result := threePLinkerTest(newAlignment, r.read)
+	result := threePLinkerTest(newAlignment, r.Read)
 
-	r.threePTrims[len(r.threePTrims)-1].isLinker = result
+	r.ThreePTrims[len(r.ThreePTrims)-1].IsLinker = result
 
 	return result
 
 }
 
-func process3p(r *inProcessRead) (bio.FASTQRead, []string) {
+func process3p(r *sw.InProcessRead) (bio.FASTQRead, []string) {
 
 	hasContam := true
 	atEnd := false
@@ -61,12 +63,12 @@ func process3p(r *inProcessRead) (bio.FASTQRead, []string) {
 
 	}
 
-	f, err := r.trim3p()
+	f, err := r.Trim3p()
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	csvData := r.getDataCSV()
+	csvData := data.GetDataCSV(r)
 
 	return f, csvData
 }

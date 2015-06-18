@@ -6,62 +6,62 @@ import (
 	bio "github.com/crmackay/gobioinfo"
 )
 
-type threePTrim struct {
-	alignment bio.PairWiseAlignment
-	isLinker  bool
+type ThreePTrim struct {
+	Alignment bio.PairWiseAlignment
+	IsLinker  bool
 }
 
-type inProcessRead struct {
-	read         *bio.FASTQRead   //query
-	threePLinker *bio.DNASequence //subject
-	threePTrims  []threePTrim
-	cutFrom      int
+type InProcessRead struct {
+	Read         *bio.FASTQRead   //query
+	ThreePLinker *bio.DNASequence //subject
+	ThreePTrims  []ThreePTrim
+	CutFrom      int
 	// TODO: add fivePTrims
 }
 
-func newInProcessRead(r *bio.FASTQRead, t *bio.DNASequence) (i *inProcessRead) {
-	i = &inProcessRead{
-		read:         r,
-		threePLinker: t,
-		threePTrims:  make([]threePTrim, 0), // TODO: is this okay? <--
+func NewInProcessRead(r *bio.FASTQRead, t *bio.DNASequence) (i *InProcessRead) {
+	i = &InProcessRead{
+		Read:         r,
+		ThreePLinker: t,
+		ThreePTrims:  make([]ThreePTrim, 0), // TODO: is this okay? <--
 	}
 	return i
 }
 
-func (r *inProcessRead) trim3p() (bio.FASTQRead, error) {
+func (r *InProcessRead) Trim3p() (bio.FASTQRead, error) {
 
-	numTrims := len(r.threePTrims)
+	numTrims := len(r.ThreePTrims)
 	var trimFrom int
 
-	if r.threePTrims[numTrims-1].isLinker == true {
+	if r.ThreePTrims[numTrims-1].IsLinker == true {
 		return bio.FASTQRead{}, errors.New("there was a problem with trimming")
 	}
 
 	if numTrims > 1 {
-		for i, elem := range r.threePTrims {
-			fmt.Println("trim list no:", i, "is:", elem.alignment.GappedQuery, "starts at:", elem.alignment.QueryStart)
+		for i, elem := range r.ThreePTrims {
+			fmt.Println("trim list no:", i, "is:", elem.Alignment.GappedQuery, "starts at:", elem.Alignment.QueryStart)
 		}
-		trimFrom = r.threePTrims[numTrims-2].alignment.QueryStart
+		trimFrom = r.ThreePTrims[numTrims-2].Alignment.QueryStart
 		if trimFrom < 23 {
 			if numTrims > 2 {
-				trimFrom = r.threePTrims[numTrims-3].alignment.QueryStart
+				trimFrom = r.ThreePTrims[numTrims-3].Alignment.QueryStart
 			} else {
-				trimFrom = len(r.read.Sequence)
+				trimFrom = len(r.Read.Sequence)
 			}
 
 		}
 	} else {
-		trimFrom = len(r.read.Sequence)
+		trimFrom = len(r.Read.Sequence)
 	}
 
 	p := bio.FASTQRead{
-		DNASequence: bio.DNASequence{Sequence: r.read.Sequence[:trimFrom]},
-		ID:          r.read.ID,
-		Misc:        r.read.Misc,
+		DNASequence: bio.DNASequence{Sequence: r.Read.Sequence[:trimFrom]},
+		ID:          r.Read.ID,
+		Misc:        r.Read.Misc,
 		PHRED: bio.PHRED{
-			Encoded:  r.read.PHRED.Encoded[:trimFrom],
-			Decoded:  r.read.PHRED.Decoded[:trimFrom],
-			Encoding: r.read.PHRED.Encoding,
+			Encoded:  r.Read.PHRED.Encoded[:trimFrom],
+			Decoded:  r.Read.PHRED.Decoded[:trimFrom],
+			Encoding: r.Read.PHRED.Encoding,
 		},
 	}
 
