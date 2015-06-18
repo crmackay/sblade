@@ -1,6 +1,5 @@
 /*
-
-Bayesian test for linker contamination
+Bayesian probabiliy test for linker contamination
 
 Here we take a pairwise alignment structure produced by gobioinfo.align, and
 calculate the probabilities of the query sequence (the read) being present
@@ -14,13 +13,13 @@ alignment and (2) the probability of a random sequence given the subject
 sequence present in the alignment. The greater of these two probabilities then
 is taken as being the most likely, and used to determine whether the sequence in
 question is a contaminant or not.
-
 */
 
 package switchblade
 
 import (
 	//"fmt"
+	sw "github.com/crmackay/SwitchBlade/switchblade"
 	bio "github.com/crmackay/gobioinfo"
 	"math"
 )
@@ -50,12 +49,14 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 		var probMiscall, probCorrcall, prob float64
 
 		phred64 := float64(phred)
-
+		//	fmt.Println("phred: ", phred64)
 		probMiscall = math.Pow(10, (-phred64 / 10))
-
+		//	fmt.Println("probMiscall: ", probMiscall)
 		probCorrcall = 1 - probMiscall
-
-		prob = (pcrError * probMiscall) + (probCorrcall * (1 - pcrError)) + ((1 / 3) * probMiscall * pcrError)
+		//	fmt.Println("probCorrcall: ", probCorrcall)
+		prob = (probCorrcall * (1 - pcrError)) +
+			((float64(2) / 3) * pcrError * probMiscall) +
+			((float64(1) / 3) * pcrError * probCorrcall)
 
 		return (prob)
 	}
@@ -66,15 +67,25 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 	probContamGivenMismatch := func(phred uint8) float64 {
 
 		var probMiscall, probCorrcall, prob float64
-
+		//	fmt.Println("pcr error: ", pcrError)
 		phred64 := float64(phred)
-
+		//	fmt.Println("phred: ", phred64)
 		probMiscall = math.Pow(10, (-phred64 / 10))
-
+		//	fmt.Println("probMiscall: ", probMiscall)
 		probCorrcall = 1 - probMiscall
+		//	fmt.Println("probCorrcall: ", probCorrcall)
 
-		prob = ((1 - pcrError) * probMiscall) + (probCorrcall * pcrError) + ((2 / 3) * probMiscall * pcrError)
+		//	fmt.Println("probMiscall * (1 - pcrError): ", probMiscall*(1-pcrError))
 
+		//	fmt.Println("(1 / 3) * pcrError * probCorrcall: ", (1/3)*pcrError*probCorrcall)
+
+		//	fmt.Println("(2 / 3) * pcrError * probMiscall: ", (2/3)*pcrError*probMiscall)
+
+		prob = (probMiscall * (1 - sw.PcrError)) +
+			((float64(1) / 3) * pcrError * probCorrcall) +
+			((float64(2) / 3) * pcrError * probMiscall)
+
+		//	fmt.Println("probContamGivenMismatch: ", prob)
 		return (prob)
 	}
 
@@ -86,8 +97,8 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 
 	}
 
-	//calculates the probability that a base is a contaminant given that is is an alignment InDel
-	//the PHRED score of the sequenced base does not matter here, and in fact might not exists
+	// calculates the probability that a base is a contaminant given that is is an alignment InDel
+	// the PHRED score of the sequenced base does not matter here, and in fact might not exists
 	probContamGivenIndel := func() float64 {
 
 		prob := pcrError
@@ -99,11 +110,11 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 
 	// calculate P(Sequence|Chance)
 
-	//parse CIGAR string and calculate the probability of the sequence given that is a contaminant
+	// parse CIGAR string and calculate the probability of the sequence given that is a contaminant
 
-	var probSeqGivenContam float64 = 1
+	var probSeqGivenContam = 1.0
 
-	var probSeqGivenChance float64 = 1
+	var probSeqGivenChance = 1.0
 
 	for _, elem := range alignment.ExpandedCIGAR {
 
@@ -113,17 +124,23 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 		switch {
 		case elem == "m":
 			probSeqGivenContam *= probContamGivenMatch(read.PHRED.Decoded[queryPosition])
-
-			probSeqGivenChance *= (1 / 4)
-
+			//		fmt.Println("probSeqGivenChance", probSeqGivenChance)
+			probSeqGivenChance *= 0.25
+			//		fmt.Println("probSeqGivenChance", probSeqGivenChance)
 			queryPosition++
 
 		case elem == "x":
 			probSeqGivenContam *= probContamGivenMismatch(read.PHRED.Decoded[queryPosition])
 
-			probSeqGivenChance *= (3 / 4)
+			probSeqGivenChance *= 0.75
 
 			queryPosition++
+
+			//		fmt.Println("at a mismatch:")
+			//		fmt.Printf("probSeqGivenContam: %20.400f", probSeqGivenContam)
+			//		fmt.Println()
+			//		fmt.Printf("probSeqGivenChance: %20.400f", probSeqGivenChance)
+			//		fmt.Println()
 
 		case elem == "n":
 			probSeqGivenContam *= probMiscall(read.PHRED.Decoded[queryPosition])
@@ -140,11 +157,24 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 			queryPosition++
 
 		}
+		//fmt.Println(probSeqGivenContam)
+		//fmt.Println(probSeqGivenChance)
 	}
 
 	// calculate P(Linker|Sequence)
 
-	var probContam float64 = 0.8
+	/*
+		probContam is the *a priori* contaminantion frequency (P(contam))
+		which equals the number of alignments that should have a linker, divided by
+		the number of total alignments.
+
+		by default we assume that the proportion of linker-contaminaned reads is 80%.
+
+		Since every read is aligned until a negative probability test is found, this
+		means that 8 out of 10 reads have a linker, but 8 out of 18 alignments have
+		a linker. Therefore the default value here is 8/18 aprox = 0.444
+	*/
+	var probContam = float64(8) / 18
 
 	probContamGivenSeq := (probContam * probSeqGivenContam) /
 		((probSeqGivenContam * probContam) + (probSeqGivenChance * (1 - probContam)))
@@ -154,9 +184,12 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 	probChanceGivenSeq := ((1 - probContam) * probSeqGivenChance) /
 		((probSeqGivenContam * probContam) + (probSeqGivenChance * (1 - probContam)))
 
-		//fmt.Printf("probChanceGivenSeq: %20.400f", probChanceGivenSeq)
-
-		// test P(L|S) > P(C|S)
+	//fmt.Printf("probChanceGivenSeq: %20.400f", probChanceGivenSeq)
+	//fmt.Println("probChanceGivenSeq", probChanceGivenSeq)
+	//fmt.Printf("probContamGivenSeq: %20.400f", probContamGivenSeq)
+	//fmt.Println("probContamGivenSeq", probContamGivenSeq)
+	//fmt.Println()
+	// test P(L|S) > P(C|S)
 
 	if probContamGivenSeq > probChanceGivenSeq {
 		hasLinker = true

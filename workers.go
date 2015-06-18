@@ -3,6 +3,7 @@ package switchblade
 import (
 	"encoding/csv"
 	"fmt"
+	tp "github.com/crmackay/SwitchBlade/switchblade/threeprime"
 	bio "github.com/crmackay/gobioinfo"
 	"os"
 	"unicode/utf8"
@@ -20,17 +21,7 @@ func Trim3pWorker(rawReads <-chan *bio.FASTQRead, finishedReads chan<- *bio.FAST
 
 		inProcessRead := newInProcessRead(rawRead, threePLinker)
 
-		// loop while the last trim is labelled as a linker (ie stop once the last
-		// trim is not a linker), or is the trims array is empty
-		// TODO: turn this into a new function
-		for inProcessRead.threePTrims[len(inProcessRead.threePTrims)-1].isLinker == true || inProcessRead.threePTrims == nil {
-
-			// align and test
-			//alignAndTest3p(inProcessRead)
-
-		}
-
-		finishedRead, data := process3p(inProcessRead)
+		finishedRead, data := threeprime.Process3p(inProcessRead)
 
 		finishedReads <- &finishedRead
 
@@ -67,38 +58,35 @@ func IOWorker(inFile string, outFile string, rawReads chan bio.FASTQRead,
 
 	dataWriter.Comma, _ = utf8.DecodeRuneInString("\t")
 
-	// TODO: how do you detect when the file is done?...
+	// TODO: this loop looks funky...
 
-loop:
-	for {
-
-		newRead := reader.NextRead()
-
-		//is the sequence attribute is empty, the whole read is likely empty,
-		//indicating that the end of the file was found
-		if newRead.Sequence == nil {
-			close(rawReads)
-			for read := range rawReads {
-				doneWriter.Write(read)
-			}
-			break loop
+	newRead, err := reader.NextRead()
+	if err != nil {
+		close(rawReads)
+		for read := range rawReads {
+			doneWriter.Write(read)
 		}
-		select {
+	}
 
-		//input is not full, great fill it up!
-		case rawReads <- newRead:
+	select {
 
-		//once the input is full, drain the two output channels
-		default:
-			currenChanLen := len(finishedReads)
+	//input is not full, great fill it up!
+	case rawReads <- newRead:
+		newRead, err = reader.NextRead()
+		if err != nil {
+			break
+		}
 
-			for i := 0; i < currenChanLen; i++ {
+	//once the input is full, drain the two output channels
+	default:
+		currChanLen := len(finishedReads)
 
-				doneWriter.Write(<-finishedReads)
+		for i := 0; i < currChanLen; i++ {
 
-				dataWriter.WriteAll([][]string{<-outputData})
+			doneWriter.Write(<-finishedReads)
 
-			}
+			dataWriter.WriteAll([][]string{<-outputData})
+
 		}
 	}
 }

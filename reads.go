@@ -2,6 +2,7 @@ package switchblade
 
 import (
 	"errors"
+	"fmt"
 	bio "github.com/crmackay/gobioinfo"
 )
 
@@ -22,7 +23,7 @@ func newInProcessRead(r *bio.FASTQRead, t *bio.DNASequence) (i *inProcessRead) {
 	i = &inProcessRead{
 		read:         r,
 		threePLinker: t,
-		threePTrims:  make([]threePTrim, 5), // TODO: is this okay? <--
+		threePTrims:  make([]threePTrim, 0), // TODO: is this okay? <--
 	}
 	return i
 }
@@ -30,12 +31,28 @@ func newInProcessRead(r *bio.FASTQRead, t *bio.DNASequence) (i *inProcessRead) {
 func (r *inProcessRead) trim3p() (bio.FASTQRead, error) {
 
 	numTrims := len(r.threePTrims)
+	var trimFrom int
 
 	if r.threePTrims[numTrims-1].isLinker == true {
 		return bio.FASTQRead{}, errors.New("there was a problem with trimming")
 	}
 
-	trimFrom := r.threePTrims[numTrims-2].alignment.QueryStart
+	if numTrims > 1 {
+		for i, elem := range r.threePTrims {
+			fmt.Println("trim list no:", i, "is:", elem.alignment.GappedQuery, "starts at:", elem.alignment.QueryStart)
+		}
+		trimFrom = r.threePTrims[numTrims-2].alignment.QueryStart
+		if trimFrom < 23 {
+			if numTrims > 2 {
+				trimFrom = r.threePTrims[numTrims-3].alignment.QueryStart
+			} else {
+				trimFrom = len(r.read.Sequence)
+			}
+
+		}
+	} else {
+		trimFrom = len(r.read.Sequence)
+	}
 
 	p := bio.FASTQRead{
 		DNASequence: bio.DNASequence{Sequence: r.read.Sequence[:trimFrom]},

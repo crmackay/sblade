@@ -1,0 +1,18 @@
+# Configuration parameters
+
+## should use TOML:
+#    https://github.com/toml-lang/toml
+
+## Example
+
+
+
+
+# number of cores on which to run Switch-Blade, default is the total number of
+logical cores detected on the machine.
+    - one core is used for all IO operations
+    - all of the rest of the cores perform 3p trimming work
+
+number_of_processors = 1
+
+# output

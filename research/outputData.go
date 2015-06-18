@@ -42,13 +42,18 @@ func newReadData(p *inProcessRead) readData {
 	var cutLens []int
 	var avgPHREDBefore, avgPHREDAfter float64
 
-	for i, elem := range p.threePTrims {
+	for _, elem := range p.threePTrims {
 		if elem.isLinker == true {
-			cutLens[i] = len(elem.alignment.Query) - elem.alignment.QueryStart
+			cutLens = append(cutLens, len(elem.alignment.Query)-elem.alignment.QueryStart)
 		}
 	}
 	numCuts = len(cutLens)
-	finalLen = p.threePTrims[len(p.threePTrims)-2].alignment.QueryStart
+
+	if numCuts > 1 {
+		finalLen = p.threePTrims[len(p.threePTrims)-2].alignment.QueryStart
+	} else {
+		finalLen = len(p.read.Sequence)
+	}
 
 	avgPHREDBefore = avgPHRED(p.read.PHRED.Decoded)
 	avgPHREDBefore = avgPHRED(p.read.PHRED.Decoded[:finalLen])

@@ -6,13 +6,14 @@ import (
 	bio "github.com/crmackay/gobioinfo"
 )
 
-func next3pAlign(r *inProcessRead) {
-	alignmentNum := len(r.threePTrims)
+func next3pAlign(r *inProcessRead) bool {
 
+	var atEnd bool
+
+	alignmentNum := len(r.threePTrims)
 	var newAlignment bio.PairWiseAlignment
 
 	if alignmentNum == 0 {
-
 		//run the first alignment
 		newAlignment = r.read.Sequence.Align(r.threePLinker.Sequence)
 
@@ -20,12 +21,19 @@ func next3pAlign(r *inProcessRead) {
 
 		// find where the last alignment started and set that to where this alignment ends
 		alignTo := r.threePTrims[alignmentNum-1].alignment.QueryStart
-		// run next alignment
-		newAlignment = r.read.Sequence[:alignTo].Align(r.threePLinker.Sequence)
+		if alignTo > 23 {
+			// run next alignment
+			newAlignment = r.read.Sequence[:alignTo].Align(r.threePLinker.Sequence)
+		} else {
+			atEnd = true
+			return atEnd
+		}
 
 	}
 	// add the new alignment to the input struct
-	r.threePTrims[alignmentNum].alignment = newAlignment
+	r.threePTrims = append(r.threePTrims, threePTrim{alignment: newAlignment})
+	atEnd = false
+	return atEnd
 }
 
 // takes a read and tests the last alignment for a contaminant
@@ -45,10 +53,9 @@ func next3pAlignTest(r *inProcessRead) bool {
 func process3p(r *inProcessRead) (bio.FASTQRead, []string) {
 
 	hasContam := true
-
-	for hasContam == true {
-
-		next3pAlign(r)
+	atEnd := false
+	for hasContam && !atEnd {
+		atEnd = next3pAlign(r)
 
 		hasContam = next3pAlignTest(r)
 
@@ -59,7 +66,7 @@ func process3p(r *inProcessRead) (bio.FASTQRead, []string) {
 		fmt.Println(err)
 	}
 
-	data := r.getDataCSV()
+	csvData := r.getDataCSV()
 
-	return f, data
+	return f, csvData
 }

@@ -1,17 +1,20 @@
 # switch-blade
-a semi-global alignment and bayesian probability based high-throughput sequence adaptor remover, using golang to implement concurrency and parrellism
+a semi-global alignment and bayesian probability based high-throughput sequence adaptor remover, using golang to implement concurrency and parallelism.
+```
 
-Semi-global
-w
-i
-t
-h
--
-Bayesian
-linker
-adapter
-d
-extractor
+  Semi-global
+  w
+  i
+  t
+  c
+  h
+
+   B ayesian
+   L inker
+   A lignment
+an D
+   E xcision
+```
 
 ## Installation:
 
@@ -29,10 +32,10 @@ Build the binary for your system and into your $GOPATH/bin:
 
 `$ go build $GOPATH/github.com/crmackay/SwitchBlade/`
 
-the `switchblade` binary should not be in $GOPATH/bin. If your GO environment is set up correctly the `switchblade` command should now be accessible to you via the command line (terminal, command prompt, etc.).
+the `switchblade` binary should now be in $GOPATH/bin. If your GO environment is set up correctly the `switchblade` command should now be accessible to you via the command line (terminal, command prompt, etc.).
 
 To test this enter:
-`$ switchblade -h` which should bring up the switchblade help screen 
+`$ switchblade -h` which should bring up the switchblade help screen
 
 ## How to Use:
 
