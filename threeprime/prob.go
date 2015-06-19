@@ -31,13 +31,20 @@ last alignment (x.threePTrims[len(x)-1]) is judged to be a contaminant
 after factoring in the sequencing quality score of the query sequence and the
 degree of alignment to the known contaminant
 */
-func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) bool {
+
+type threePQuerySet struct {
+	alignment *bio.PairWiseAlignment
+	read      *bio.FASTQRead
+	testNum   int
+}
+
+func threePLinkerTest(s threePQuerySet) bool {
 
 	// get the segment of the read that is under consideration for this test:
 	// this the segment of the read that is part of the alignment
 
-	testStart := alignment.QueryStart
-
+	testStart := s.alignment.QueryStart
+	// fmt.Println(testStart)
 	var hasLinker bool
 
 	// TODO: this should get cleaned up...perhaps by creating a collection of functions, see: http://jordanorelli.com/post/42369331748/function-types-in-go-golang
@@ -50,15 +57,15 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 		var probMiscall, probCorrcall, prob float64
 
 		phred64 := float64(phred)
-		//	fmt.Println("phred: ", phred64)
+		//	// fmt.Println("phred: ", phred64)
 		probMiscall = math.Pow(10, (-phred64 / 10))
-		//	fmt.Println("probMiscall: ", probMiscall)
+		//	// fmt.Println("probMiscall: ", probMiscall)
 		probCorrcall = 1 - probMiscall
-		//	fmt.Println("probCorrcall: ", probCorrcall)
+		//	// fmt.Println("probCorrcall: ", probCorrcall)
 		prob = (probCorrcall * (1 - conf.PCRError)) +
 			((float64(2) / 3) * conf.PCRError * probMiscall) +
 			((float64(1) / 3) * conf.PCRError * probCorrcall)
-
+		// fmt.Println("probContamGivenMatch: ", prob)
 		return (prob)
 	}
 
@@ -68,25 +75,25 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 	probContamGivenMismatch := func(phred uint8) float64 {
 
 		var probMiscall, probCorrcall, prob float64
-		//	fmt.Println("pcr error: ", conf.PCRError)
+		// fmt.Println("pcr error: ", conf.PCRError)
 		phred64 := float64(phred)
-		//	fmt.Println("phred: ", phred64)
+		// fmt.Println("phred: ", phred64)
 		probMiscall = math.Pow(10, (-phred64 / 10))
-		//	fmt.Println("probMiscall: ", probMiscall)
+		// fmt.Println("probMiscall: ", probMiscall)
 		probCorrcall = 1 - probMiscall
-		//	fmt.Println("probCorrcall: ", probCorrcall)
+		// fmt.Println("probCorrcall: ", probCorrcall)
 
-		//	fmt.Println("probMiscall * (1 - conf.PCRError): ", probMiscall*(1-conf.PCRError))
+		// fmt.Println("probMiscall * (1 - conf.PCRError): ", probMiscall*(1-conf.PCRError))
 
-		//	fmt.Println("(1 / 3) * conf.PCRError * probCorrcall: ", (1/3)*conf.PCRError*probCorrcall)
+		// fmt.Println("(1 / 3) * conf.PCRError * probCorrcall: ", (float64(1)/3)*conf.PCRError*probCorrcall)
 
-		//	fmt.Println("(2 / 3) * conf.PCRError * probMiscall: ", (2/3)*conf.PCRError*probMiscall)
+		// fmt.Println("(2 / 3) * conf.PCRError * probMiscall: ", (float64(2)/3)*conf.PCRError*probMiscall)
 
-		prob = (probMiscall * (1 - conf.PCRError)) +
+		prob = (probMiscall * (1 - conf.PCRError) * 3) +
 			((float64(1) / 3) * conf.PCRError * probCorrcall) +
-			((float64(2) / 3) * conf.PCRError * probMiscall)
+			((float64(1) / 3) * (1 - conf.PCRError) * probMiscall)
 
-		//	fmt.Println("probContamGivenMismatch: ", prob)
+		// fmt.Println("probContamGivenMismatch: ", prob)
 		return (prob)
 	}
 
@@ -117,34 +124,35 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 
 	var probSeqGivenChance = 1.0
 
-	for _, elem := range alignment.ExpandedCIGAR {
+	for i, elem := range s.alignment.ExpandedCIGAR {
 
 		// track position along query string, especially to keep track in indels
-		queryPosition := testStart
+		queryPosition := testStart + i
+		// fmt.Println(queryPosition)
 
 		switch {
 		case elem == "m":
-			probSeqGivenContam *= probContamGivenMatch(read.PHRED.Decoded[queryPosition])
-			//		fmt.Println("probSeqGivenChance", probSeqGivenChance)
+			probSeqGivenContam *= probContamGivenMatch(s.read.PHRED.Decoded[queryPosition])
+			//		// fmt.Println("probSeqGivenChance", probSeqGivenChance)
 			probSeqGivenChance *= 0.25
-			//		fmt.Println("probSeqGivenChance", probSeqGivenChance)
+			//		// fmt.Println("probSeqGivenChance", probSeqGivenChance)
 			queryPosition++
 
 		case elem == "x":
-			probSeqGivenContam *= probContamGivenMismatch(read.PHRED.Decoded[queryPosition])
+			probSeqGivenContam *= probContamGivenMismatch(s.read.PHRED.Decoded[queryPosition])
 
 			probSeqGivenChance *= 0.75
 
 			queryPosition++
 
-			//		fmt.Println("at a mismatch:")
-			//		fmt.Printf("probSeqGivenContam: %20.400f", probSeqGivenContam)
-			//		fmt.Println()
-			//		fmt.Printf("probSeqGivenChance: %20.400f", probSeqGivenChance)
-			//		fmt.Println()
+			//		// fmt.Println("at a mismatch:")
+			//		// fmt.Printf("probSeqGivenContam: %20.400f", probSeqGivenContam)
+			//		// fmt.Println()
+			//		// fmt.Printf("probSeqGivenChance: %20.400f", probSeqGivenChance)
+			//		// fmt.Println()
 
 		case elem == "n":
-			probSeqGivenContam *= probMiscall(read.PHRED.Decoded[queryPosition])
+			probSeqGivenContam *= probMiscall(s.read.PHRED.Decoded[queryPosition])
 			queryPosition++
 
 		case elem == "i":
@@ -158,8 +166,9 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 			queryPosition++
 
 		}
-		//fmt.Println(probSeqGivenContam)
-		//fmt.Println(probSeqGivenChance)
+
+		// fmt.Println("probSeqGivenContam", probSeqGivenContam)
+		// fmt.Println("probSeqGivenChance", probSeqGivenChance)
 	}
 
 	// calculate P(Linker|Sequence)
@@ -175,8 +184,12 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 		means that 8 out of 10 reads have a linker, but 8 out of 18 alignments have
 		a linker. Therefore the default value here is 8/18 aprox = 0.444
 	*/
-	var probContam = float64(8) / 18
 
+	probContam := float64(8) / (math.Pow(10, float64(s.testNum)) +
+		math.Pow(10, float64(s.testNum-1))*8 +
+		math.Pow(8, float64(s.testNum-1)))
+
+	// fmt.Println(probContam)
 	probContamGivenSeq := (probContam * probSeqGivenContam) /
 		((probSeqGivenContam * probContam) + (probSeqGivenChance * (1 - probContam)))
 
@@ -185,11 +198,11 @@ func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) boo
 	probChanceGivenSeq := ((1 - probContam) * probSeqGivenChance) /
 		((probSeqGivenContam * probContam) + (probSeqGivenChance * (1 - probContam)))
 
-	//fmt.Printf("probChanceGivenSeq: %20.400f", probChanceGivenSeq)
-	//fmt.Println("probChanceGivenSeq", probChanceGivenSeq)
-	//fmt.Printf("probContamGivenSeq: %20.400f", probContamGivenSeq)
-	//fmt.Println("probContamGivenSeq", probContamGivenSeq)
-	//fmt.Println()
+	//// fmt.Printf("probChanceGivenSeq: %20.400f", probChanceGivenSeq)
+	// fmt.Println("probChanceGivenSeq", probChanceGivenSeq)
+	//// fmt.Printf("probContamGivenSeq: %20.400f", probContamGivenSeq)
+	// fmt.Println("probContamGivenSeq", probContamGivenSeq)
+	//// fmt.Println()
 	// test P(L|S) > P(C|S)
 
 	if probContamGivenSeq > probChanceGivenSeq {

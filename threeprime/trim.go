@@ -41,10 +41,11 @@ func next3pAlign(r *sw.InProcessRead) bool {
 // takes a read and tests the last alignment for a contaminant
 func next3pAlignTest(r *sw.InProcessRead) bool {
 
+	numTrims := len(r.ThreePTrims)
 	// run the bayesian probability test on the new alignment, and record that value
-	newAlignment := &r.ThreePTrims[len(r.ThreePTrims)-1].Alignment
+	newAlignment := &r.ThreePTrims[numTrims-1].Alignment
 
-	result := threePLinkerTest(newAlignment, r.Read)
+	result := threePLinkerTest(threePQuerySet{alignment: newAlignment, read: r.Read, testNum: numTrims})
 
 	r.ThreePTrims[len(r.ThreePTrims)-1].IsLinker = result
 

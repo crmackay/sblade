@@ -1,7 +1,7 @@
 package switchblade
 
 import (
-	"errors"
+	//"errors"
 	"fmt"
 	bio "github.com/crmackay/gobioinfo"
 )
@@ -34,7 +34,11 @@ func (r *InProcessRead) Trim3p() (bio.FASTQRead, error) {
 	var trimFrom int
 
 	if r.ThreePTrims[numTrims-1].IsLinker == true {
-		return bio.FASTQRead{}, errors.New("there was a problem with trimming")
+		fmt.Println("trim list is only 1:", r.ThreePTrims[numTrims-1].Alignment.GappedQuery, "starts at:", r.ThreePTrims[numTrims-1].Alignment.QueryStart)
+		trimFrom = r.ThreePTrims[numTrims-1].Alignment.QueryStart
+		if trimFrom < 23 {
+			trimFrom = len(r.Read.Sequence)
+		}
 	}
 
 	if numTrims > 1 {
@@ -42,18 +46,16 @@ func (r *InProcessRead) Trim3p() (bio.FASTQRead, error) {
 			fmt.Println("trim list no:", i, "is:", elem.Alignment.GappedQuery, "starts at:", elem.Alignment.QueryStart)
 		}
 		trimFrom = r.ThreePTrims[numTrims-2].Alignment.QueryStart
-		if trimFrom < 23 {
+		if trimFrom > 23 {
 			if numTrims > 2 {
 				trimFrom = r.ThreePTrims[numTrims-3].Alignment.QueryStart
-			} else {
-				trimFrom = len(r.Read.Sequence)
 			}
+		} else {
+			trimFrom = len(r.Read.Sequence)
 
 		}
-	} else {
-		trimFrom = len(r.Read.Sequence)
 	}
-
+	fmt.Println(trimFrom)
 	p := bio.FASTQRead{
 		DNASequence: bio.DNASequence{Sequence: r.Read.Sequence[:trimFrom]},
 		ID:          r.Read.ID,
