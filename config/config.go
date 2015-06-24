@@ -11,3 +11,24 @@ var PCRError = PCRDetails["RTError"] +
 	(PCRDetails["DNAPolError"] * PCRDetails["NumPCRCycles"])
 
 const ComplexityThreshold = 2
+
+const LenFivePrimeLinker = 23
+
+var Barcodes = map[string]map[string]string{
+	"lane1": map[string]string{
+		"AGC": "sample1",
+		"CAC": "sample2",
+		"GCT": "sample3",
+		"GTG": "sample4",
+	},
+	"lane2": map[string]string{
+		"AGC": "sample5",
+		"CAC": "sample6",
+		"GCT": "sample7",
+		"GTG": "sample8",
+	},
+}
+
+var Linker3p = "GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG"
+
+var Linker5p = "AGGGAGGACGATGCGGNNNNG"
