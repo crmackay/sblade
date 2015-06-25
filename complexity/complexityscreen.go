@@ -15,12 +15,18 @@ func incTriplet(m map[string]int, t string) {
 	m[t]++
 }
 
-func isNotComplex(s bio.DNASequence) bool {
-	seq := s.Sequence
+// IsComplex takes a gobioinfo.NucleotideSequence and applies the DustMask
+// algorithm and the complexity threshold (set @ configuration) to determine
+// if the sequence is complex or noncomplex. The result is a bool representing
+// whether the sequence is complex (true) or noncomplex (false).
+func IsComplex(s bio.NucleotideSequence) bool {
+
+	length := len(s)
+
 	triplets := make(map[string]int)
-	for i := 0; i < (len(s.Sequence) - 2); i++ {
-		trip := string(seq[i : i+3])
-		incTriplet(triplets, trip)
+	for i := 0; i < (length - 2); i++ {
+		t := string(s[i : i+3])
+		incTriplet(triplets, t)
 	}
 
 	numerator := float64(0)
@@ -28,16 +34,16 @@ func isNotComplex(s bio.DNASequence) bool {
 
 		numerator += (float64(v) * (float64(v) - 1)) / 2
 	}
-	score := numerator / (float64(len(s.Sequence)) - 2)
+	score := numerator / (float64(length) - 2)
 
-	var notComplex bool
+	var isComplex bool
 
 	if score > conf.ComplexityThreshold {
-		notComplex = true
+		isComplex = false
 	} else {
-		notComplex = false
+		isComplex = true
 	}
 
-	return notComplex
+	return isComplex
 
 }

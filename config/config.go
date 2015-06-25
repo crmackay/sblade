@@ -29,6 +29,6 @@ var Barcodes = map[string]map[string]string{
 	},
 }
 
-var Linker3p = "GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG"
+const Linker3p = "GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG"
 
-var Linker5p = "AGGGAGGACGATGCGGNNNNG"
+const Linker5p = "AGGGAGGACGATGCGGNNNNG"

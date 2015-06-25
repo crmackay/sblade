@@ -5,17 +5,30 @@ import (
 	"testing"
 )
 
-//func newInProcessRead(r *bio.FASTQRead, t *bio.DNASequence) (i *inProcessRead) {}
+/*
+type OrigRead struct {
+	*bio.FASTQRead
+	aligns3p     []Alignment
+	finalSeq     bio.NucleotideSequence
+	finalComplex bool
+	//	aligns5p []Alignment
+	//	barcode	[]rune
+}
+*/
 
-func TestNewInProcessRead(t *testing.T) {
-	fmt.Println("testing newInProcessRead()")
+// func NewOrigRead(f *bio.FASTQRead) (r OrigRead) {
+
+func TestNewOrigRead(t *testing.T) {
+	fmt.Println("testing NewOrigRead")
+
 }
 
-// func (r *inProcessRead) trim3p() (bio.FASTQRead, error) {}
+// func (r OrigRead) Trim() error {
+func TestTrimOrigRead(t *testing.T) {
+	fmt.Println("testing OrigRead.Trim()")
+}
 
-func TestTrim3p(t *testing.T) {
-	fmt.Println("testing *inProcessRead.trim3p()")
-
-	// create some that should raise errors (ie, last trim.isLinker == true)
-
+// func (r OrigRead) CalcComplex()
+func TestCalcComplexOrigRead(t *testing.T) {
+	fmt.Println("testing OrigRead.CalcComplex()")
 }
