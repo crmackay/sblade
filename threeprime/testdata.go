@@ -1,132 +1,8 @@
-package switchblade
-
-import (
-	"bufio"
-	"bytes"
-	"fmt"
-	bio "github.com/crmackay/gobioinfo"
-	sw "github.com/crmackay/switchblade"
-	"testing"
-)
-
-var testData = bytes.NewBufferString(data)
-
-// func process3p(r *inProcessRead) (f bio.FASTQRead, data []string) {}
-func NOTTestProcess3p(t *testing.T) {
-
-	// aligns reads until no more linkers are found
-
-	// run test with test data, and check the final alignment position against the correct trim length
-
-	scanner := bio.FASTQScanner{Scanner: bufio.NewScanner(testData)}
-
-	var testReads []bio.FASTQRead
-
-	var err error
-	var newRead bio.FASTQRead
-
-	newRead, err = scanner.NextRead()
-
-	for err == nil {
-		fmt.Println(newRead.Sequence)
-		testReads = append(testReads, newRead)
-		newRead, err = scanner.NextRead()
-
-	}
-
-	type trimTestPair struct {
-		read   bio.FASTQRead
-		result string
-	}
-
-	var testSuite []trimTestPair
-
-	subject := bio.NewDNASequence("GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG")
-
-	for _, elem := range testReads {
-		fmt.Println("HERE: ", string(elem.Sequence))
-		anticipatedResult := elem.Misc[1:]
-		testSuite = append(testSuite, trimTestPair{read: elem, result: anticipatedResult})
-	}
-
-	for _, test := range testSuite {
-		resultRead, _ := process3p(sw.NewOrigRead(&test.read))
-		fmt.Println("expected result:\t", test.result)
-		fmt.Println("actualy result:\t\t", string(resultRead.Sequence))
-
-		if test.result != string(resultRead.Sequence) {
-			t.Error("expected:\t",
-				test.result, "\n",
-				"got:\t\t\t",
-				string(resultRead.Sequence), "\n")
-		}
-	}
-}
-
-// func next3pAlign(r *inProcessRead) {
-func TestNext3pAlign(t *testing.T) {
-	// get perform the next alignments
-}
-
-// func next3pAlignTest(r *inProcessRead) bool {}
-func TestNext3pAlignTest(t *testing.T) {
-	fmt.Println("testing next3pAlignTest()")
-	// tests whether the last alignment is a linker not
-}
-
-func TestProcess3p(t *testing.T) {
-
-	// aligns reads until no more linkers are found
-
-	singleBytes := bytes.NewBufferString(single)
-	scanner := bio.FASTQScanner{Scanner: bufio.NewScanner(singleBytes)}
-
-	var testReads []bio.FASTQRead
-
-	var err error
-	var newRead bio.FASTQRead
-
-	newRead, err = scanner.NextRead()
-
-	for err == nil {
-		fmt.Println(newRead.Sequence)
-		testReads = append(testReads, newRead)
-		newRead, err = scanner.NextRead()
-
-	}
-
-	type trimTestPair struct {
-		read   bio.FASTQRead
-		result string
-	}
-
-	var testSuite []trimTestPair
-
-	subject := bio.NewDNASequence("GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG")
-
-	for _, elem := range testReads {
-		fmt.Println("HERE: ", string(elem.Sequence))
-		anticipatedResult := elem.Misc[1:]
-		testSuite = append(testSuite, trimTestPair{read: elem, result: anticipatedResult})
-	}
-
-	for _, test := range testSuite {
-		resultRead, _ := process3p(sw.NewInProcessRead(&test.read, &subject))
-		fmt.Println("expected result:\t", test.result)
-		fmt.Println("actualy result:\t\t", string(resultRead.Sequence))
-
-		if test.result != string(resultRead.Sequence) {
-			t.Error("expected:\t",
-				test.result, "\n",
-				"got:\t\t\t",
-				string(resultRead.Sequence), "\n")
-		}
-	}
-}
+package threeprime
 
 // test data. Here we will use the "misc" third line in the FASTQ reads to store our
 //expected test results. Namely, what the 3'-cut read should look like
-var data = `@HWI-ST560:155:C574EACXX:3:1101:2012:1985 1:N:0:
+var testRawReads = `@HWI-ST560:155:C574EACXX:3:1101:2012:1985 1:N:0:
 AGCAGGGAGGACGATGCGGTTGTGATATAATACAACCTGCTAAGTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTGAAAAAAAAAAAAAAAA
 +AGCAGGGAGGACGATGCGGTTGTGATATAATACAACCTGCTAA
 @CCFFFFFHHHHHIIIIIICDF?D@BBD<<??FHG?GIIIIEG@@A@CAFHIIEIEEH@AHFF9AB;?CCCA@3=A<ACA>@CCB@::ABBBBBBCBBBB
@@ -148,7 +24,7 @@ CACAGGGAGGACGATGCGGGAGTGAGACCGTCTTGCTTACTTGTCCGATGAAATGAATGAAATAGAAAGTGGGAAAATAA
 BBCFFFFFHHHHHJJJJJJJIJHIGIHHIJJJJJIGIIEHIIGHHHHFFFCEDDEDCCCDDDACDCDDD@CDDACBCCCDDCDEDDCDCCCCCDCC:@99
 @HWI-ST560:155:C574EACXX:3:1101:2409:1942 1:N:0:
 CACAGGGAGGACGATGCGGAAAAGAATGTGAATCATGGTGTTCTTGTGGTTGGCTATGGGACTCTTGATGGCAAAGATTACTGGCTTGTGAAAAAAGGGT
-+CACAGGGAGGACGATGCGGAAAAGAATGTGAATCATGGTGTTCTTGTGGTTGGCTATGGGACTCTTGATGGCAAAGATTACTGGCTTGTGAAAAAAGGGT
++CACAGGGAGGACGATGCGGAAAAGAATGTGAATCATGGTGTTCTTGTGGTTGGCTATGGGACTCTTGATGGCAAAGATTACTGGCTTGTGAAAAAAGG
 BBBFFFFFHHHHHFIJIJJJJJJJJIHIFIJJJJJJJJ=FGIJJJJHIJJJJHHHHFFFFFDEEEEDDDDDDDDDDDDDDDDDDDDD5?CCDCDD#####
 @HWI-ST560:155:C574EACXX:3:1101:2433:1960 1:N:0:
 AGCAGGGAGGACGATGCGGACAAGTCCCTGAGGAGCCCTTTGAGCCTGGTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTGAAAAAAAAAAA
@@ -176,7 +52,7 @@ AGCAGGGAGGACGATGCGGAAACGTAGTGTTTCCTACTTTATGGATGTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTT
 @CCFFFFFHHHHHIJJJJJJJJJJGHJIIIIJJJJIJJJJHIJIIIJJJJJJJJHHGHHHFFFFDDDDDDDDDDDBDDDDDDDDDDDDDDDDDBD@DD9B
 @HWI-ST560:155:C574EACXX:3:1101:2342:1996 1:N:0:
 GTGAGGGAGGACGATGCGGCGGGGTGGCTGTTACTTCCAGCGGTGGGTGTCCGTCTTTTGCTTGGAAAAAATGCCGTCTTCTGCTTGAAAAAAAAAAAAA
-+GTGAGGGAGGACGATGCGGCGGGGTGGCTGTTACTTCCAGCGGTGG
++GTGAGGGAGGACGATGCGGCGGGGTGGCTGTTACTTCCAGCGGTGGGTGTCCGTCTTTTGCTTGGAAAAAATGCCGTCTTCTGCTTGAAAAAAAAAAAAA
 @@@DDDDDHHHHHIIIIII>6;6?############################################################################
 @HWI-ST560:155:C574EACXX:3:1101:2654:1937 1:N:0:
 NCTAGGGAGGACGATGCGGAGAAGAGTGAATGGCAACAATGAAGCTATCGTGCATGTTGTGGAGACTCGTGTCAGTCACTTCCAGCGGTCGTATGCCGTC
@@ -252,7 +128,7 @@ CACAGGGAGGACGATGCGGTTAAGAGCCTGAATAATACTGTGAACTGCACATGCACGCCCGGGCGTGAGCTGGTGCTTGT
 BBBFFFFFHHHHHJJJJJJJJJJIJJIJJJJJJJJIJJJIJJJIJJJJJJJJIJJJIHHHFFDDDDDDDDDDDDDACDDDDDDDDDDDDDDDDCCCC44:
 @HWI-ST560:155:C574EACXX:3:1101:3206:1953 1:N:0:
 GCTAGGGAGGACGATGCGGCACAGGTTTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGCGTGTGTGTATTAAACCCACTGAACGTGACAGA
-+GCTAGGGAGGACGATGCGGCACAG
++GCTAGGGAGGACGATGCGGCACAGGTTTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGTGCGTGTGTGTATTAAACCCACTGAAC
 CCCFFFFFHHHHHIJJJJJJJJHIJGGHHHGHHCFBFFHEHHGHHIHHHHFFFFEEEEEBBDDDD?B(;@DDDD8?:4+:4>A(8<8((444?B######
 @HWI-ST560:155:C574EACXX:3:1101:3018:1971 1:N:0:
 AGCAGGGAGGACGATGCGGTTAAGGTGTCAGTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTGAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

@@ -15,7 +15,7 @@ is taken as being the most likely, and used to determine whether the sequence in
 question is a contaminant or not.
 */
 
-package switchblade
+package threeprime
 
 import (
 	//"fmt"
@@ -32,18 +32,12 @@ after factoring in the sequencing quality score of the query sequence and the
 degree of alignment to the known contaminant
 */
 
-type threePQuerySet struct {
-	alignment *bio.PairWiseAlignment
-	read      *bio.FASTQRead
-	testNum   int
-}
-
-func threePLinkerTest(s threePQuerySet) bool {
+func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) bool {
 
 	// get the segment of the read that is under consideration for this test:
 	// this the segment of the read that is part of the alignment
 
-	testStart := s.alignment.QueryStart
+	testStart := a.QueryStart
 	// fmt.Println(testStart)
 	var hasLinker bool
 
@@ -124,22 +118,21 @@ func threePLinkerTest(s threePQuerySet) bool {
 
 	var probSeqGivenChance = 1.0
 
-	for i, elem := range s.alignment.ExpandedCIGAR {
+	for i, elem := range a.ExpandedCIGAR {
 
 		// track position along query string, especially to keep track in indels
 		queryPosition := testStart + i
-		// fmt.Println(queryPosition)
 
 		switch {
 		case string(elem) == "m":
-			probSeqGivenContam *= probContamGivenMatch(s.read.PHRED.Decoded[queryPosition])
+			probSeqGivenContam *= probContamGivenMatch(r.PHRED.Decoded[queryPosition])
 			//		// fmt.Println("probSeqGivenChance", probSeqGivenChance)
 			probSeqGivenChance *= 0.25
 			//		// fmt.Println("probSeqGivenChance", probSeqGivenChance)
 			queryPosition++
 
 		case string(elem) == "x":
-			probSeqGivenContam *= probContamGivenMismatch(s.read.PHRED.Decoded[queryPosition])
+			probSeqGivenContam *= probContamGivenMismatch(r.PHRED.Decoded[queryPosition])
 
 			probSeqGivenChance *= 0.75
 
@@ -152,7 +145,7 @@ func threePLinkerTest(s threePQuerySet) bool {
 			//		// fmt.Println()
 
 		case string(elem) == "n":
-			probSeqGivenContam *= probMiscall(s.read.PHRED.Decoded[queryPosition])
+			probSeqGivenContam *= probMiscall(r.PHRED.Decoded[queryPosition])
 			queryPosition++
 
 		case string(elem) == "i":
@@ -185,9 +178,9 @@ func threePLinkerTest(s threePQuerySet) bool {
 		a linker. Therefore the default value here is 8/18 aprox = 0.444
 	*/
 
-	probContam := float64(8) / (math.Pow(10, float64(s.testNum)) +
-		math.Pow(10, float64(s.testNum-1))*8 +
-		math.Pow(8, float64(s.testNum-1)))
+	probContam := float64(8) / (math.Pow(10, float64(testNum)) +
+		math.Pow(10, float64(testNum-1))*8 +
+		math.Pow(8, float64(testNum-1)))
 
 	// fmt.Println(probContam)
 	probContamGivenSeq := (probContam * probSeqGivenContam) /

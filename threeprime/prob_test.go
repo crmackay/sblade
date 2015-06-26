@@ -1,4 +1,4 @@
-package switchblade
+package threeprime
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 )
 
 // func threePLinkerTest(alignment *bio.PairWiseAlignment, read *bio.FASTQRead) bool {}
-func _TestThreePLinkerTest(t *testing.T) {
+func TestThreePLinkerTest(t *testing.T) {
 	fmt.Println("testing threePLinkerTest()")
 
 	numRead := 5
@@ -46,11 +46,7 @@ func _TestThreePLinkerTest(t *testing.T) {
 
 	for i, elem := range testSet {
 		if i < 6 {
-			result := threePLinkerTest(threePQuerySet{
-				alignment: &elem.alignment,
-				read:      &elem.read,
-				testNum:   1,
-			})
+			result := threePLinkerTest(elem.alignment, elem.read, 1)
 			if result != elem.expectedResult {
 				t.Error(
 					"got:",
