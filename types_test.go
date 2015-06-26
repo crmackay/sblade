@@ -6,7 +6,7 @@ import (
 )
 
 /*
-type OrigRead struct {
+type Read struct {
 	*bio.FASTQRead
 	aligns3p     []Alignment
 	finalSeq     bio.NucleotideSequence
@@ -16,19 +16,19 @@ type OrigRead struct {
 }
 */
 
-// func NewOrigRead(f *bio.FASTQRead) (r OrigRead) {
+// func NewRead(f *bio.FASTQRead) (r Read) {
 
-func TestNewOrigRead(t *testing.T) {
-	fmt.Println("testing NewOrigRead")
+func TestNewRead(t *testing.T) {
+	fmt.Println("testing NewRead")
 
 }
 
-// func (r OrigRead) Trim() error {
-func TestTrimOrigRead(t *testing.T) {
-	fmt.Println("testing OrigRead.Trim()")
+// func (r Read) Trim() error {
+func TestTrimRead(t *testing.T) {
+	fmt.Println("testing Read.Trim()")
 }
 
-// func (r OrigRead) CalcComplex()
-func TestCalcComplexOrigRead(t *testing.T) {
-	fmt.Println("testing OrigRead.CalcComplex()")
+// func (r Read) CalcComplex()
+func TestCalcComplexRead(t *testing.T) {
+	fmt.Println("testing Read.CalcComplex()")
 }

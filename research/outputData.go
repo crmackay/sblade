@@ -38,7 +38,7 @@ type fileData struct {
 	avgFinalLen float64
 }
 
-func newReadData(p *sw.OrigRead) readData {
+func newReadData(p *sw.Read) readData {
 	var numCuts, finalLen int
 	var cutLens []int
 	var avgPHREDBefore, avgPHREDAfter float64

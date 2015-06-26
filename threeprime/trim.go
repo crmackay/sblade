@@ -9,7 +9,7 @@ import (
 	"github.com/crmackay/switchblade/config"
 )
 
-func next3pAlign(r *sw.OrigRead) (bool, int) {
+func next3pAlign(r *sw.Read) (bool, int) {
 
 	num3pAligns := len(r.Aligns3p)
 	alignTo := len(r.Sequence)
@@ -32,7 +32,7 @@ func next3pAlign(r *sw.OrigRead) (bool, int) {
 
 }
 
-func trim3p(r *sw.OrigRead) {
+func trim3p(r *sw.Read) {
 
 	var trimTo int
 
@@ -53,7 +53,7 @@ func trim3p(r *sw.OrigRead) {
 	r.FinalSeq = r.Sequence[:trimTo]
 }
 
-func process3p(r *sw.OrigRead) {
+func process3p(r *sw.Read) {
 
 	still3pContam := true
 
@@ -96,7 +96,7 @@ func process3p(r *sw.OrigRead) {
 // }
 //
 // // takes a read and tests the last alignment for a contaminant
-// func next3pAlignTest(r *sw.OrigRead) bool {
+// func next3pAlignTest(r *sw.Read) bool {
 //
 // 	numTrims := len(r.ThreePTrims)
 // 	// run the bayesian probability test on the new alignment, and record that value

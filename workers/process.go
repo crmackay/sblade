@@ -7,7 +7,7 @@ import (
 	three "github.com/crmackay/switchblade/threeprime"
 )
 
-func Process(r OrigRead) bio.DNASequence {
+func Process(r Read) bio.DNASequence {
 
 	r.Trim()
 
