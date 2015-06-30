@@ -1,0 +1,29 @@
+
+[PCRDetails]
+[PCRDetails.RTError] = 0.00001490711984999862, // (http://www.chem.agilent.com/library/datasheets/public/tb108_71067.pdf)
+
+[PCRDetails.DNAPolError] = 0.00001038461538461538, // 26x taq https://www.neb.com/products/pcr-polymerases-and-amplification-technologies/q5-high-fidelity-dna-polymerases/q5-high-fidelity-dna-polymerases/how-is-fidelity-measured
+
+[PCRDetails.NumPCRCycles] = 30
+
+ComplexityThreshold = 2
+
+LenFivePrimeLinker = 23
+
+[lane1]
+[lane1.AGC] = sample1
+[lane1.AGC] = sample2
+		"GCT": "sample3",
+		"GTG": "sample4",
+	},
+	"lane2": map[string]string{
+		"AGC": "sample5",
+		"CAC": "sample6",
+		"GCT": "sample7",
+		"GTG": "sample8",
+	},
+}
+
+var Linker3p = "GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG"
+
+var Linker5p = "AGGGAGGACGATGCGGNNNNG"
