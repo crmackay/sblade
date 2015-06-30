@@ -150,6 +150,7 @@ func findBarcode(b string, q []uint8) string {
 	seqProbs := make(map[string]float64)
 
 	for k := range conf.Barcodes {
+		fmt.Println(k)
 		probSeq := float64(1)
 		bcode := []rune(k)
 		for i, elem := range b {
@@ -161,22 +162,25 @@ func findBarcode(b string, q []uint8) string {
 			}
 
 		}
+		fmt.Println(probSeq)
 		seqProbs[k] = probSeq
 	}
 
 	var denominator float64
 	// TODO: THIS SHOULD BE 0.3 AND 0.2 NOT 0.25
-	for _, v := range seqProbs {
-		denominator += v * float64(1) / 4
-	}
+	for k, v := range seqProbs {
+		denominator += v * conf.BarcodeRatios[k]
 
+	}
+	fmt.Println("denominator: ", denominator)
 	bcProbs := make(map[string]float64)
 	for k, v := range seqProbs {
 		// TODO change this to the correct ration (0.2 and 0.3)
 		probBarcodeGivenSeq := (v * conf.BarcodeRatios[k]) / denominator
 		bcProbs[k] = probBarcodeGivenSeq
-		fmt.Println(bcProbs)
+
 	}
+	fmt.Println(bcProbs)
 
 	trueBarcode := maxProbBarcode(bcProbs)
 
