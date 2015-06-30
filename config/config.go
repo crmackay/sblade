@@ -25,6 +25,13 @@ var Barcodes = map[string]string{
 	"GTG": "sample4",
 }
 
+var BarcodeRatios = map[string]float64{
+	"AGC": 0.3,
+	"CAC": 0.2,
+	"GCT": 0.3,
+	"GTG": 0.2,
+}
+
 const Linker5p = "AGGGAGGACGATGCGGNNNNG"
 
 var Linker3p = bio.NewDNASequence("GTGTCAGTCACTTCCAGCGGTCGTATGCCGTCTTCTGCTTG")

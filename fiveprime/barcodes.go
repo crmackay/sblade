@@ -1,7 +1,7 @@
 package fiveprime
 
 import (
-	//"fmt"
+	"fmt"
 	bio "github.com/crmackay/gobioinfo"
 	sw "github.com/crmackay/switchblade"
 	conf "github.com/crmackay/switchblade/config"
@@ -102,7 +102,7 @@ func find5pLinker(r *sw.Read) {
 		r.Barcode = barcode
 	} else {
 		bcQual := r.PHRED.Decoded[0:3]
-		r.Barcode = findBarcode(barcode, bcQual)
+		barcode = findBarcode(barcode, bcQual)
 	}
 
 	r.Barcode = barcode
@@ -147,19 +147,20 @@ func findBarcode(b string, q []uint8) string {
 		return (prob)
 	}
 
-	var seqProbs map[string]float64
+	seqProbs := make(map[string]float64)
 
 	for k := range conf.Barcodes {
 		probSeq := float64(1)
 		bcode := []rune(k)
 		for i, elem := range b {
 			if string(elem) == string(bcode[i]) {
+
 				probSeq *= probBaseGivenMatch(q[i])
 			} else {
 				probSeq *= probBaseGivenMismatch(q[i])
 			}
-		}
 
+		}
 		seqProbs[k] = probSeq
 	}
 
@@ -169,10 +170,12 @@ func findBarcode(b string, q []uint8) string {
 		denominator += v * float64(1) / 4
 	}
 
-	var bcProbs map[string]float64
+	bcProbs := make(map[string]float64)
 	for k, v := range seqProbs {
-		probBarcodeGivenSeq := (v * float64(1) / 4) / denominator
+		// TODO change this to the correct ration (0.2 and 0.3)
+		probBarcodeGivenSeq := (v * conf.BarcodeRatios[k]) / denominator
 		bcProbs[k] = probBarcodeGivenSeq
+		fmt.Println(bcProbs)
 	}
 
 	trueBarcode := maxProbBarcode(bcProbs)
@@ -185,7 +188,7 @@ func maxProbBarcode(m map[string]float64) string {
 	var maxK string
 	i := 0
 	for k, v := range m {
-		if i == 1 {
+		if i == 0 {
 			maxV = v
 			maxK = k
 		} else {
@@ -196,6 +199,7 @@ func maxProbBarcode(m map[string]float64) string {
 		}
 		i++
 	}
+	fmt.Println(maxK, maxV)
 	return maxK
 
 }
