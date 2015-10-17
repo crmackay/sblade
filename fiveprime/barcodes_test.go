@@ -50,7 +50,7 @@ func TestFindBarcode(t *testing.T) {
 
 // func maxProbBarcode(m map[string]float64) string {
 func TestMaxProbBarcode(t *testing.T) {
-	fmt.Println("testing TestMacProbBarcode")
+	fmt.Println("testing TestMaxProbBarcode")
 }
 
 type checkBarcode struct {
@@ -74,6 +74,7 @@ func init() {
 // "GCT": "sample3",
 // "GTG": "sample4",
 
+// fastaq raw data with the third line that containes the extected barcode result:
 var testFASTQ = bytes.NewBufferString(`@HWI-ST560:155:C574EACXX:3:1101:2214:1998 1:N:0:
 AGCAGGGAGGACGATGCGGAACTGATGTCTAAGTACGCACGGCCGGTACAGTGAAACTGCGAATGGCTCGTGTCAGTCACTTCCAGCGGGCGTATGCCGT
 +AGC

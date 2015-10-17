@@ -1,18 +1,18 @@
 /*
 Bayesian probabiliy test for linker contamination
 
-Here we take a pairwise alignment structure produced by gobioinfo.align, and
-calculate the probabilities of the query sequence (the read) being present
-under two assumptions: (1) that it is a contaminant and (2) that
-it is a random sequence. These probabilities are calculated by factoring in
-sequencing quality data reported by the Illumina sequencer, as well as
-user-defined values for Reverse-Transcriptase error rates, and PCR error rates
-(errors per base-pair). Using Bayes' theorem, we are then able to calculate
-(1) the probability of contamination given the subject sequence present in the
-alignment and (2) the probability of a random sequence given the subject
-sequence present in the alignment. The greater of these two probabilities then
-is taken as being the most likely, and used to determine whether the sequence in
-question is a contaminant or not.
+Here we take a pairwise alignment structure produced by
+http://github.com/crmackay/gobioinfo/Align calculate the probabilities of the
+query sequence (the read) being present under two assumptions: (1) that it is a
+contaminant and (2) thatit is a random sequence. These probabilities are
+calculated by factoring insequencing quality data reported by the
+Illumina sequencer, as well as user-defined values for Reverse-Transcriptase
+error rates, and PCR error rates (errors per base-pair). Using Bayes' theorem,
+we are then able to calculate (1) the probability of contamination given the
+subject sequence present in the alignment and (2) the probability of a random
+sequence given the subject sequence present in the alignment. The greater of
+these two probabilities then is taken as being the most likely, and used to
+determine whether the sequence in question is a contaminant or not.
 */
 
 package threeprime
@@ -21,7 +21,7 @@ import (
 	//"fmt"
 	bio "github.com/crmackay/gobioinfo"
 	//sw "github.com/crmackay/switchblade"
-	conf "github.com/crmackay/switchblade/config"
+	"github.com/crmackay/switchblade/config"
 	"math"
 )
 
@@ -56,8 +56,8 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 		//	// fmt.Println("probMiscall: ", probMiscall)
 		probCorrcall = 1 - probMiscall
 		//	// fmt.Println("probCorrcall: ", probCorrcall)
-		prob = (probCorrcall * (float64(1) - conf.PCRError)) +
-			(probMiscall * conf.PCRError)
+		prob = (probCorrcall * (float64(1) - config.PCRError)) +
+			(probMiscall * config.PCRError)
 
 		// fmt.Println("probContamGivenMatch: ", prob)
 		return (prob)
@@ -69,7 +69,7 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 	probContamGivenMismatch := func(phred uint8) float64 {
 
 		var probMiscall, probCorrcall, prob float64
-		// fmt.Println("pcr error: ", conf.PCRError)
+		// fmt.Println("pcr error: ", config.PCRError)
 		phred64 := float64(phred)
 		// fmt.Println("phred: ", phred64)
 		probMiscall = math.Pow(10, (-phred64 / 10))
@@ -77,15 +77,15 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 		probCorrcall = 1 - probMiscall
 		// fmt.Println("probCorrcall: ", probCorrcall)
 
-		// fmt.Println("probMiscall * (1 - conf.PCRError): ", probMiscall*(1-conf.PCRError))
+		// fmt.Println("probMiscall * (1 - config.PCRError): ", probMiscall*(1-config.PCRError))
 
-		// fmt.Println("(1 / 3) * conf.PCRError * probCorrcall: ", (float64(1)/3)*conf.PCRError*probCorrcall)
+		// fmt.Println("(1 / 3) * config.PCRError * probCorrcall: ", (float64(1)/3)*config.PCRError*probCorrcall)
 
-		// fmt.Println("(2 / 3) * conf.PCRError * probMiscall: ", (float64(2)/3)*conf.PCRError*probMiscall)
+		// fmt.Println("(2 / 3) * config.PCRError * probMiscall: ", (float64(2)/3)*config.PCRError*probMiscall)
 
-		prob = ((float64(1) / 3) * probMiscall * (float64(1) - conf.PCRError)) +
-			(float64(2)/9)*conf.PCRError*probMiscall +
-			(float64(1)/3)*conf.PCRError*probCorrcall
+		prob = ((float64(1) / 3) * probMiscall * (float64(1) - config.PCRError)) +
+			(float64(2)/9)*config.PCRError*probMiscall +
+			(float64(1)/3)*config.PCRError*probCorrcall
 
 		// fmt.Println("probContamGivenMismatch: ", prob)
 		return (prob)
@@ -95,7 +95,7 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 	// the PHRED score of the sequenced base does not matter here, and in fact might not exists
 	probContamGivenIndel := func() float64 {
 
-		prob := conf.PCRError
+		prob := config.PCRError
 
 		return (prob)
 	}

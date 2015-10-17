@@ -1,6 +1,7 @@
 /*
 
-determining read complexity via the DustMask algorithm (http://kodomo.fbb.msu.ru/FBB/year_10/ppt/DUST.pdf)
+determining read complexity via the DustMask algorithm
+(http://kodomo.fbb.msu.ru/FBB/year_10/ppt/DUST.pdf)
 
 */
 

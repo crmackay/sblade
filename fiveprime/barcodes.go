@@ -17,8 +17,8 @@ type linkerFeat struct {
 
 func newLinkerFeat(st, en int, seq string) linkerFeat {
 	return linkerFeat{
-		start:    st,
-		end:      en,
+		start:    st, // start of the feature in the query sequence
+		end:      en, // end of the feature in the query sequence
 		sequence: seq,
 	}
 }
@@ -66,6 +66,8 @@ type alignment5p struct {
 // look for exact match at the beginning of sequence
 // 	- if there put barcode degen bases and read start position in read
 
+// TODO: if 5p is not exact match: align --> create StoQ map --> find positions for barcode and degen bases
+
 func barcodeInSet(b string) bool {
 	found := false
 
@@ -94,9 +96,10 @@ func find5pLinker(r *sw.Read) {
 		barcode = string(r.Sequence[0:3])
 		degen = string(r.Sequence[19:23])
 		end5p = 24
-	} else {
-		// TODO: put a function here to perform sg alignment and find linker, barcode and degen sequence
-	}
+	} // else {
+	// TODO: put a function here to perform sg alignment and find linker, barcode and degen sequence
+	// bio.
+	//}
 
 	if barcodeInSet(barcode) {
 		r.Barcode = barcode
@@ -208,7 +211,6 @@ func maxProbBarcode(m map[string]float64) string {
 
 }
 
-// it its not align --> create StoQ map --> find positions for barcode and degen bases
 //
 //
 //

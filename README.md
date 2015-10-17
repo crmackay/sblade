@@ -1,20 +1,7 @@
 # switch-blade
 a semi-global alignment and bayesian probability based high-throughput sequence adaptor remover, using golang to implement concurrency and parallelism.
-```
 
-  Semi-global
-  w
-  i
-  t
-  c
-  h
-
-   B ayesian
-   L inker
-   A lignment
-an D
-   E xcision
-```
+<u>**s**</u>emi-global <u>**B**</u>ayesian <u>**L**</u>inker <u>**A**</u>lignment an<u>**D**</u> <u>**E**</u>xcision
 
 ## Installation:
 

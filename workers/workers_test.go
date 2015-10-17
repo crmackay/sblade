@@ -1,4 +1,4 @@
-package switchblade
+package workers
 
 import (
 	"fmt"

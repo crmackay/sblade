@@ -4,8 +4,8 @@ package main
 
 import (
 	"fmt"
-	sblade "github.com/crmackay/SwitchBlade/switchblade"
-	bio "github.com/crmackay/gobioinfo"
+	//bio "github.com/crmackay/gobioinfo"
+	//"github.com/crmackay/switchblade/workers"
 	"runtime"
 	"sync"
 )
@@ -28,9 +28,9 @@ func main() {
 
 	CPUWorkers := totalCPUS - 1
 
-	rawReads := make(chan bio.FASTQRead, 1000)
+	//rawReads := make(chan bio.FASTQRead, 1000)
 
-	processedReads := make(chan bio.FASTQRead, 1000)
+	//processedReads := make(chan bio.FASTQRead, 1000)
 
 	// TODO set path to input file
 
@@ -41,12 +41,12 @@ func main() {
 	var wg sync.WaitGroup
 
 	// start the single IO worker
-	go sblade.IOWork(inFile, outFile, rawReads, processedReads)
+	//go workers.IOWork(inFile, outFile, rawReads, processedReads)
 	wg.Add(1)
 
 	// start CPU-1 number of workers
 	for c := 0; c < CPUWorkers; c++ {
-		go sblade.TrimWork(rawReads, processedReads)
+		//	go workers.TrimWork(rawReads, processedReads)
 		wg.Add(1)
 	}
 
