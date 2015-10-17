@@ -1,4 +1,4 @@
-package switchblade
+package types
 
 import (
 	"fmt"

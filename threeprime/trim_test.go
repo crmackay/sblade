@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	bio "github.com/crmackay/gobioinfo"
-	sw "github.com/crmackay/switchblade"
+	sw "github.com/crmackay/switchblade/types"
 	"testing"
 )
 
@@ -14,9 +14,9 @@ type testRead struct {
 	result string
 }
 
-func newTestRead(r sw.Read) testRead {
+func newTestRead(r *sw.Read) testRead {
 	newTR := testRead{
-		read:   r,
+		read:   *r,
 		result: r.Misc[1:],
 	}
 	return newTR
@@ -26,10 +26,10 @@ func setupTestData() []testRead {
 	testData := bytes.NewBufferString(testRawReads)
 	scanner := bio.FASTQScanner{Scanner: bufio.NewScanner(testData), File: nil}
 	newRead, _ := scanner.NextRead()
-	testSuite := []testRead{newTestRead(sw.NewRead(newRead))}
+	testSuite := []testRead{newTestRead(sw.NewRead(&newRead))}
 	for newRead.Sequence != nil {
 
-		newTR := newTestRead(sw.NewRead(newRead))
+		newTR := newTestRead(sw.NewRead(&newRead))
 
 		testSuite = append(testSuite, newTR)
 		newRead, _ = scanner.NextRead()
@@ -50,12 +50,12 @@ func TestProcess3p(t *testing.T) {
 	fmt.Println("testing process3p()")
 	testSuite := setupTestData()
 	for _, test := range testSuite {
-		process3p(&test.read)
-		if string(test.read.FinalSeq) != test.result {
+		Process3p(&test.read)
+		if string(test.read.Sequence[test.read.End5p:test.read.End3p]) != test.result {
 			t.Error("expecting:\t",
 				test.result,
 				"\n\tbut got:\t",
-				string(test.read.FinalSeq))
+				string(test.read.Sequence[test.read.End5p:test.read.End3p]))
 		}
 	}
 }

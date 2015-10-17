@@ -3,8 +3,8 @@ package fiveprime
 import (
 	"fmt"
 	bio "github.com/crmackay/gobioinfo"
-	sw "github.com/crmackay/switchblade"
-	conf "github.com/crmackay/switchblade/config"
+	config "github.com/crmackay/switchblade/config"
+	sw "github.com/crmackay/switchblade/types"
 	"math"
 	//"strings"
 )
@@ -57,6 +57,32 @@ type alignment5p struct {
 	mapStoQ map[int]int
 }
 
+func newAlignment5p(s, q bio.NucleotideSequence) alignment5p {
+	featMap := make(map[int]int)
+
+	pwAlignment := s.Align(q)
+	posQ := 0
+	posS := 0
+	for i, letter := range pwAlignment.GappedSubject {
+		if string(letter) != "-" && string(pwAlignment.GappedQuery[i]) != "-" {
+			featMap[posS] = posQ
+			posQ++
+			posS++
+		} else if string(letter) == "-" && string(pwAlignment.GappedQuery[i]) != "-" {
+			posQ++
+		} else if string(letter) != "-" && string(pwAlignment.GappedQuery[i]) == "-" {
+			featMap[posS] = -1
+			posS++
+		}
+	}
+	fivePAlignment := alignment5p{
+		PairWiseAlignment: pwAlignment,
+		mapStoQ:           featMap,
+	}
+
+	return fivePAlignment
+}
+
 //
 //
 // CGACGATCXXXAGGGAGGACGATGCGGNNNNG[...Read...]GTGTCAGTCACTTCC
@@ -71,7 +97,7 @@ type alignment5p struct {
 func barcodeInSet(b string) bool {
 	found := false
 
-	for k := range conf.Barcodes {
+	for k := range config.Barcodes {
 		if b == k {
 			found = true
 		}
@@ -96,16 +122,32 @@ func find5pLinker(r *sw.Read) {
 		barcode = string(r.Sequence[0:3])
 		degen = string(r.Sequence[19:23])
 		end5p = 24
-	} // else {
-	// TODO: put a function here to perform sg alignment and find linker, barcode and degen sequence
-	// bio.
-	//}
-
-	if barcodeInSet(barcode) {
-		r.Barcode = barcode
 	} else {
+		fivePAlign := newAlignment5p(r.Sequence[0:25], bio.NucleotideSequence(config.Linker5p))
+		for i := 0; i < 3; i++ {
+			if fivePAlign.mapStoQ[i] != -1 {
+				barcode += string(r.Sequence[fivePAlign.mapStoQ[i]])
+			} else {
+				barcode += "n"
+			}
+		}
+		for i := 19; i < 24; i++ {
+			if fivePAlign.mapStoQ[i] != -1 {
+				degen += string(r.Sequence[fivePAlign.mapStoQ[i]])
+			} else {
+				degen += "n"
+			}
+		}
+		if fivePAlign.mapStoQ[23] != -1 {
+			end5p = fivePAlign.mapStoQ[23]
+		} else {
+			end5p = fivePAlign.mapStoQ[fivePAlign.SubjectAlignLen]
+		}
+	}
+
+	if barcodeInSet(barcode) != true {
 		bcQual := r.PHRED.Decoded[0:3]
-		barcode = findBarcode(barcode, bcQual)
+		barcode = inferBarcode(barcode, bcQual)
 	}
 
 	r.Barcode = barcode
@@ -113,7 +155,7 @@ func find5pLinker(r *sw.Read) {
 	r.End5p = end5p
 }
 
-func findBarcode(b string, q []uint8) string {
+func inferBarcode(b string, q []uint8) string {
 
 	probBaseGivenMatch := func(phred uint8) float64 {
 
@@ -125,8 +167,8 @@ func findBarcode(b string, q []uint8) string {
 		//	// fmt.Println("probMiscall: ", probMiscall)
 		probCorrcall = 1 - probMiscall
 		//	// fmt.Println("probCorrcall: ", probCorrcall)
-		prob = (probCorrcall * (float64(1) - conf.PCRError)) +
-			(probMiscall * conf.PCRError)
+		prob = (probCorrcall * (float64(1) - config.PCRError)) +
+			(probMiscall * config.PCRError)
 
 		// fmt.Println("probContamGivenMatch: ", prob)
 		return (prob)
@@ -142,9 +184,9 @@ func findBarcode(b string, q []uint8) string {
 
 		probCorrcall = 1 - probMiscall
 
-		prob = ((float64(1) / 3) * probMiscall * (float64(1) - conf.PCRError)) +
-			(float64(2)/9)*conf.PCRError*probMiscall +
-			(float64(1)/3)*conf.PCRError*probCorrcall
+		prob = ((float64(1) / 3) * probMiscall * (float64(1) - config.PCRError)) +
+			(float64(2)/9)*config.PCRError*probMiscall +
+			(float64(1)/3)*config.PCRError*probCorrcall
 
 		// fmt.Println("probContamGivenMismatch: ", prob)
 		return (prob)
@@ -152,7 +194,7 @@ func findBarcode(b string, q []uint8) string {
 
 	seqProbs := make(map[string]float64)
 
-	for k := range conf.Barcodes {
+	for k := range config.Barcodes {
 		fmt.Println(k)
 		probSeq := float64(1)
 		bcode := []rune(k)
@@ -172,14 +214,14 @@ func findBarcode(b string, q []uint8) string {
 	var denominator float64
 	// TODO: THIS SHOULD BE 0.3 AND 0.2 NOT 0.25
 	for k, v := range seqProbs {
-		denominator += v * conf.BarcodeRatios[k]
+		denominator += v * config.BarcodeRatios[k]
 
 	}
 	fmt.Println("denominator: ", denominator)
 	bcProbs := make(map[string]float64)
 	for k, v := range seqProbs {
 		// TODO change this to the correct ration (0.2 and 0.3)
-		probBarcodeGivenSeq := (v * conf.BarcodeRatios[k]) / denominator
+		probBarcodeGivenSeq := (v * config.BarcodeRatios[k]) / denominator
 		bcProbs[k] = probBarcodeGivenSeq
 
 	}

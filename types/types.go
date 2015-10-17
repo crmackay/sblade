@@ -1,4 +1,4 @@
-package switchblade
+package types
 
 import (
 	"errors"
@@ -19,29 +19,28 @@ type Alignment struct {
 // a bool field indicated whether the final read passed the complexity filter
 type Read struct {
 	bio.FASTQRead
-	Aligns3p     []Alignment
-	End3p        int
-	End5p        int
-	Barcode      string
-	DegenBases   string
-	FinalSeq     bio.NucleotideSequence
-	FinalComplex bool
-	//	aligns5p []Alignment
-	//	barcode	[]rune
+	Aligns3p       []Alignment
+	End3p          int
+	End5p          int
+	Barcode        string
+	DegenBases     string
+	FinalSeq       bio.NucleotideSequence
+	IsFinalComplex bool
+	// Align5p      Alignment
 }
 
 // NewRead takes a *gobioninfo.FASTQRead and packages it into a Read
 // with the additional fields defined as nil
-func NewRead(f bio.FASTQRead) (r Read) {
-	r = Read{FASTQRead: f}
+func NewRead(f *bio.FASTQRead) (r *Read) {
+	r = &Read{FASTQRead: *f}
 	return r
 }
 
 // Trim uses that three-p alignments and five-p alignments found within the given struct to
 // determine at which base the 3p contaminant starts, the 5p contaminante ends, and the read starts and ends. It then
-// trims the original sequence to those positions, and stored the final read as
+// trims the original sequence to those positions, and stores the final read as
 // Read.FinalSeq. Trim returns an error if the alignment arrays are misformed in someway.
-func (r Read) Trim() error {
+func (r *Read) Trim() error {
 
 	//find the last alignment
 	// trim 3p
@@ -77,6 +76,6 @@ func (r Read) CalcComplex() {
 
 	//isNotComplex(s bio.DNASequence)
 
-	r.FinalComplex = complexity.IsComplex(r.Sequence)
+	r.IsFinalComplex = complexity.IsComplex(r.Sequence)
 
 }

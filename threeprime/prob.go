@@ -18,7 +18,7 @@ determine whether the sequence in question is a contaminant or not.
 package threeprime
 
 import (
-	//"fmt"
+	"fmt"
 	bio "github.com/crmackay/gobioinfo"
 	//sw "github.com/crmackay/switchblade"
 	"github.com/crmackay/switchblade/config"
@@ -117,11 +117,11 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 	var probSeqGivenContam = 1.0
 
 	var probSeqGivenChance = 1.0
-
+	fmt.Println(a.ExpandedCIGAR)
 	for i, elem := range a.ExpandedCIGAR {
-
 		// track position along query string, especially to keep track in indels
 		queryPosition := testStart + i
+		fmt.Println(queryPosition, string(elem))
 
 		switch {
 		case string(elem) == "m":

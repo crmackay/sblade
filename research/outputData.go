@@ -1,9 +1,9 @@
-package switchblade
+package research
 
 import (
 	//"encoding/csv"
 	//"fmt"
-	sw "github.com/crmackay/switchblade"
+	sw "github.com/crmackay/switchblade/types"
 	"strconv"
 	"strings"
 )
@@ -43,21 +43,21 @@ func newReadData(p *sw.Read) readData {
 	var cutLens []int
 	var avgPHREDBefore, avgPHREDAfter float64
 
-	for _, elem := range p.ThreePTrims {
-		if elem.IsLinker == true {
-			cutLens = append(cutLens, len(elem.Alignment.Query)-elem.Alignment.QueryStart)
+	for _, elem := range p.Aligns3p {
+		if elem.IsContam == true {
+			cutLens = append(cutLens, len(elem.Query)-elem.QueryStart)
 		}
 	}
 	numCuts = len(cutLens)
 
 	if numCuts > 1 {
-		finalLen = p.ThreePTrims[len(p.ThreePTrims)-2].Alignment.QueryStart
+		finalLen = p.Aligns3p[len(p.Aligns3p)-2].QueryStart
 	} else {
-		finalLen = len(p.Read.Sequence)
+		finalLen = len(p.Sequence)
 	}
 
-	avgPHREDBefore = avgPHRED(p.Read.PHRED.Decoded)
-	avgPHREDBefore = avgPHRED(p.Read.PHRED.Decoded[:finalLen])
+	avgPHREDBefore = avgPHRED(p.PHRED.Decoded)
+	avgPHREDBefore = avgPHRED(p.PHRED.Decoded[:finalLen])
 
 	newData := readData{
 		numCuts:        numCuts,
@@ -70,15 +70,17 @@ func newReadData(p *sw.Read) readData {
 }
 
 func avgPHRED(s []uint8) float64 {
-	var sum int
-	for _, elem := range s {
+	var i, sum int
+	for i, elem := range s {
 		sum += int(elem)
+		i++
 	}
-	avg := float64(sum) / float64(len(s))
+	avg := float64(sum) / float64(i)
 	return avg
 }
 
-func GetDataCSV(p *sw.InProcessRead) []string {
+// GetDataCSV does that
+func GetDataCSV(p *sw.Read) []string {
 	newData := newReadData(p)
 
 	toCSV := []string{

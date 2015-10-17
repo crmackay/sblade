@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	bio "github.com/crmackay/gobioinfo"
-	sw "github.com/crmackay/switchblade"
+	sw "github.com/crmackay/switchblade/types"
 	"testing"
 )
 
@@ -43,8 +43,8 @@ func TestFind5pLinker(t *testing.T) {
 	}
 }
 
-// func findBarcode(b string, q []uint8) string {
-func TestFindBarcode(t *testing.T) {
+// func inferBarcode(b string, q []uint8) string {
+func TestInferBarcode(t *testing.T) {
 	fmt.Println("testing TestFindBarcode")
 }
 

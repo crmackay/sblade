@@ -4,7 +4,7 @@ import (
 	//"errors"
 	"fmt"
 	//bio "github.com/crmackay/gobioinfo"
-	sw "github.com/crmackay/switchblade"
+	sw "github.com/crmackay/switchblade/types"
 	//data "github.com/crmackay/switchblade/research"
 	"github.com/crmackay/switchblade/config"
 )
@@ -22,7 +22,7 @@ func next3pAlign(r *sw.Read) (bool, int) {
 		fmt.Println("alignTo", alignTo)
 	}
 
-	alignment := r.Sequence[:alignTo-1].Align(config.Linker3p.Sequence)
+	alignment := r.Sequence[:alignTo].Align(config.Linker3p.Sequence)
 	// func threePLinkerTest(a *bio.PairWiseAlignment, r *bio.FASTQRead, testNum int) bool {
 	isContam = threePLinkerTest(alignment, r.FASTQRead, num3pAligns+1)
 	r.Aligns3p = append(r.Aligns3p, sw.Alignment{PairWiseAlignment: alignment, IsContam: isContam})
@@ -38,7 +38,7 @@ func trim3p(r *sw.Read) {
 
 	numAligns := len(r.Aligns3p)
 
-	lastAlign := r.Aligns3p[numAligns-1]
+	lastAlign := r.Aligns3p[numAligns]
 	lastAlignPos := lastAlign.QueryStart
 	trimLimit := len(config.Linker5p)
 
@@ -50,10 +50,11 @@ func trim3p(r *sw.Read) {
 
 	}
 
-	r.FinalSeq = r.Sequence[:trimTo]
+	r.End3p = trimTo
 }
 
-func process3p(r *sw.Read) {
+// Process3p does 3p aligning, and fills in 3p data to the supplied struct
+func Process3p(r *sw.Read) {
 
 	still3pContam := true
 
@@ -65,48 +66,3 @@ func process3p(r *sw.Read) {
 
 	trim3p(r)
 }
-
-//
-// 	var atEnd bool
-//
-// 	alignmentNum := len(r.ThreePTrims)
-// 	var newAlignment bio.PairWiseAlignment
-//
-// 	if alignmentNum == 0 {
-// 		//run the first alignment
-// 		newAlignment = r.Read.Sequence.Align(r.ThreePLinker.Sequence)
-//
-// 	} else {
-//
-// 		// find where the last alignment started and set that to where this alignment ends
-// 		alignTo := r.ThreePTrims[alignmentNum-1].Alignment.QueryStart
-// 		if alignTo > 23 {
-// 			// run next alignment
-// 			newAlignment = r.Read.Sequence[:alignTo].Align(r.ThreePLinker.Sequence)
-// 		} else {
-// 			atEnd = true
-// 			return atEnd
-// 		}
-//
-// 	}
-// 	// add the new alignment to the input struct
-// 	r.ThreePTrims = append(r.ThreePTrims, sw.ThreePTrim{Alignment: newAlignment})
-// 	atEnd = false
-// 	return atEnd
-// }
-//
-// // takes a read and tests the last alignment for a contaminant
-// func next3pAlignTest(r *sw.Read) bool {
-//
-// 	numTrims := len(r.ThreePTrims)
-// 	// run the bayesian probability test on the new alignment, and record that value
-// 	newAlignment := &r.ThreePTrims[numTrims-1].Alignment
-//
-// 	result := threePLinkerTest(threePQuerySet{alignment: newAlignment, read: r.Read, testNum: numTrims})
-//
-// 	r.ThreePTrims[len(r.ThreePTrims)-1].IsLinker = result
-//
-// 	return result
-//
-// }
-//
