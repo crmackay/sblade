@@ -60,7 +60,7 @@ type alignment5p struct {
 func newAlignment5p(s, q bio.NucleotideSequence) alignment5p {
 	featMap := make(map[int]int)
 
-	pwAlignment := s.Align(q)
+	pwAlignment := s.SG5pAlign(q)
 	posQ := 0
 	posS := 0
 	for i, letter := range pwAlignment.GappedSubject {

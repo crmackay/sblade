@@ -10,8 +10,8 @@ import (
 )
 
 func next3pAlign(r *sw.Read) (bool, int) {
-
 	num3pAligns := len(r.Aligns3p)
+	// alignTo defaults to the 3-prime end of the full sequence (len -1 )
 	alignTo := len(r.Sequence)
 
 	var isContam bool
@@ -19,12 +19,13 @@ func next3pAlign(r *sw.Read) (bool, int) {
 
 	if num3pAligns != 0 {
 		alignTo = r.Aligns3p[num3pAligns-1].QueryStart
-		fmt.Println("alignTo", alignTo)
 	}
 
-	alignment := r.Sequence[:alignTo].Align(config.Linker3p.Sequence)
-	// func threePLinkerTest(a *bio.PairWiseAlignment, r *bio.FASTQRead, testNum int) bool {
+	alignment := r.Sequence[:alignTo].SG3pAlign(config.Linker3p.Sequence)
+
+	// func threePLinkerTest(a *bio.PairWiseAlignment, r *bio.FASTQRead, testNum int) bool {}
 	isContam = threePLinkerTest(alignment, r.FASTQRead, num3pAligns+1)
+	//fmt.Println(isContam)
 	r.Aligns3p = append(r.Aligns3p, sw.Alignment{PairWiseAlignment: alignment, IsContam: isContam})
 	pos = alignment.QueryStart
 
@@ -38,7 +39,7 @@ func trim3p(r *sw.Read) {
 
 	numAligns := len(r.Aligns3p)
 
-	lastAlign := r.Aligns3p[numAligns]
+	lastAlign := r.Aligns3p[numAligns-1]
 	lastAlignPos := lastAlign.QueryStart
 	trimLimit := len(config.Linker5p)
 
@@ -58,9 +59,18 @@ func Process3p(r *sw.Read) {
 
 	still3pContam := true
 
-	pos3p := len(r.Sequence)
-	for still3pContam && pos3p > len(config.Linker5p) {
+	pos3p := len(r.Sequence) - 1
+	fmt.Println(pos3p)
+	fmt.Println(len(config.Linker5p))
+	for still3pContam {
+		// if len(config.Linker5p) < pos3p {
+		// 	still3pContam, pos3p = next3pAlign(r)
+		// 	fmt.Println(string(r.Sequence))
+		// 	fmt.Println(still3pContam, pos3p)
+		// }
+
 		still3pContam, pos3p = next3pAlign(r)
+		fmt.Println(string(r.Sequence))
 		fmt.Println(still3pContam, pos3p)
 	}
 

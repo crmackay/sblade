@@ -4,8 +4,8 @@ Bayesian probabiliy test for linker contamination
 Here we take a pairwise alignment structure produced by
 http://github.com/crmackay/gobioinfo/Align calculate the probabilities of the
 query sequence (the read) being present under two assumptions: (1) that it is a
-contaminant and (2) thatit is a random sequence. These probabilities are
-calculated by factoring insequencing quality data reported by the
+contaminant and (2) that it is a random sequence. These probabilities are
+calculated by factoring in sequencing quality data reported by the
 Illumina sequencer, as well as user-defined values for Reverse-Transcriptase
 error rates, and PCR error rates (errors per base-pair). Using Bayes' theorem,
 we are then able to calculate (1) the probability of contamination given the
@@ -51,15 +51,15 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 		var probMiscall, probCorrcall, prob float64
 
 		phred64 := float64(phred)
-		//	// fmt.Println("phred: ", phred64)
+		//fmt.Println("phred: ", phred64)
 		probMiscall = math.Pow(10, (-phred64 / 10))
-		//	// fmt.Println("probMiscall: ", probMiscall)
+		//fmt.Println("probMiscall: ", probMiscall)
 		probCorrcall = 1 - probMiscall
-		//	// fmt.Println("probCorrcall: ", probCorrcall)
+		//fmt.Println("probCorrcall: ", probCorrcall)
 		prob = (probCorrcall * (float64(1) - config.PCRError)) +
 			(probMiscall * config.PCRError)
 
-		// fmt.Println("probContamGivenMatch: ", prob)
+		//fmt.Println("probContamGivenMatch: ", prob)
 		return (prob)
 	}
 
@@ -115,20 +115,22 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 	}
 
 	var probSeqGivenContam = 1.0
-
 	var probSeqGivenChance = 1.0
-	fmt.Println(a.ExpandedCIGAR)
-	for i, elem := range a.ExpandedCIGAR {
-		// track position along query string, especially to keep track in indels
-		queryPosition := testStart + i
-		fmt.Println(queryPosition, string(elem))
 
+	queryPosition := testStart
+
+	fmt.Println(a.ExpandedCIGAR)
+	for _, elem := range a.ExpandedCIGAR {
+		// track position along query string, especially to keep track of indels
+
+		//fmt.Println(queryPosition, string(elem))
+		fmt.Println(queryPosition, string(elem))
 		switch {
 		case string(elem) == "m":
 			probSeqGivenContam *= probContamGivenMatch(r.PHRED.Decoded[queryPosition])
-			//		// fmt.Println("probSeqGivenChance", probSeqGivenChance)
+			// fmt.Println("probSeqGivenChance", probSeqGivenChance)
 			probSeqGivenChance *= 0.25
-			//		// fmt.Println("probSeqGivenChance", probSeqGivenChance)
+			//fmt.Println("probSeqGivenChance", probSeqGivenChance)
 			queryPosition++
 
 		case string(elem) == "x":
@@ -138,11 +140,11 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 
 			queryPosition++
 
-			//		// fmt.Println("at a mismatch:")
-			//		// fmt.Printf("probSeqGivenContam: %20.400f", probSeqGivenContam)
-			//		// fmt.Println()
-			//		// fmt.Printf("probSeqGivenChance: %20.400f", probSeqGivenChance)
-			//		// fmt.Println()
+			// fmt.Println("at a mismatch:")
+			// fmt.Printf("probSeqGivenContam: %20.400f", probSeqGivenContam)
+			// fmt.Println()
+			// fmt.Printf("probSeqGivenChance: %20.400f", probSeqGivenChance)
+			// fmt.Println()
 
 		case string(elem) == "n":
 			probSeqGivenContam *= probMiscall(r.PHRED.Decoded[queryPosition])
@@ -153,6 +155,7 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 			// in the case of a calculated deletion in the query seqeuence, we
 			// do not increment queryPosition, since we are effectively in a
 			// "gap" in the query string
+			fmt.Println("hello")
 
 		case string(elem) == "j":
 			probSeqGivenContam *= probContamGivenIndel()
@@ -191,11 +194,11 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 	probChanceGivenSeq := ((1 - probContam) * probSeqGivenChance) /
 		((probSeqGivenContam * probContam) + (probSeqGivenChance * (1 - probContam)))
 
-	//// fmt.Printf("probChanceGivenSeq: %20.400f", probChanceGivenSeq)
-	// fmt.Println("probChanceGivenSeq", probChanceGivenSeq)
-	//// fmt.Printf("probContamGivenSeq: %20.400f", probContamGivenSeq)
-	// fmt.Println("probContamGivenSeq", probContamGivenSeq)
-	//// fmt.Println()
+		// fmt.Printf("probChanceGivenSeq: %20.400f", probChanceGivenSeq)
+	fmt.Println("probChanceGivenSeq", probChanceGivenSeq)
+	// fmt.Printf("probContamGivenSeq: %20.400f", probContamGivenSeq)
+	fmt.Println("probContamGivenSeq", probContamGivenSeq)
+	fmt.Println()
 	// test P(L|S) > P(C|S)
 
 	if probContamGivenSeq > probChanceGivenSeq {

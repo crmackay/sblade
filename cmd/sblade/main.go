@@ -49,7 +49,7 @@ func main() {
 	go workers.ReadWriter(inFile, outFile, rawReads, finishedReads, outputData, doneSignal)
 	wg.Add(1)
 
-	// start CPU-1 number of workers
+	// start numCPU - 1 number of workers
 	for c := 0; c < CPUWorkers; c++ {
 		go workers.Trimmer(rawReads, finishedReads, outputData, doneSignal)
 		wg.Add(1)
