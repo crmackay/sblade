@@ -18,7 +18,7 @@ determine whether the sequence in question is a contaminant or not.
 package threeprime
 
 import (
-	"fmt"
+	//"fmt"
 	bio "github.com/crmackay/gobioinfo"
 	//sw "github.com/crmackay/switchblade"
 	"github.com/crmackay/switchblade/config"
@@ -119,12 +119,12 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 
 	queryPosition := testStart
 
-	fmt.Println(a.ExpandedCIGAR)
+	// fmt.Println(a.ExpandedCIGAR)
 	for _, elem := range a.ExpandedCIGAR {
 		// track position along query string, especially to keep track of indels
 
-		//fmt.Println(queryPosition, string(elem))
-		fmt.Println(queryPosition, string(elem))
+		// fmt.Println(queryPosition, string(elem))
+		// fmt.Println(queryPosition, string(elem))
 		switch {
 		case string(elem) == "m":
 			probSeqGivenContam *= probContamGivenMatch(r.PHRED.Decoded[queryPosition])
@@ -155,7 +155,6 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 			// in the case of a calculated deletion in the query seqeuence, we
 			// do not increment queryPosition, since we are effectively in a
 			// "gap" in the query string
-			fmt.Println("hello")
 
 		case string(elem) == "j":
 			probSeqGivenContam *= probContamGivenIndel()
@@ -195,10 +194,10 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 		((probSeqGivenContam * probContam) + (probSeqGivenChance * (1 - probContam)))
 
 		// fmt.Printf("probChanceGivenSeq: %20.400f", probChanceGivenSeq)
-	fmt.Println("probChanceGivenSeq", probChanceGivenSeq)
+	// fmt.Println("probChanceGivenSeq", probChanceGivenSeq)
 	// fmt.Printf("probContamGivenSeq: %20.400f", probContamGivenSeq)
-	fmt.Println("probContamGivenSeq", probContamGivenSeq)
-	fmt.Println()
+	// fmt.Println("probContamGivenSeq", probContamGivenSeq)
+	// fmt.Println()
 	// test P(L|S) > P(C|S)
 
 	if probContamGivenSeq > probChanceGivenSeq {

@@ -2,7 +2,7 @@ package threeprime
 
 import (
 	//"errors"
-	"fmt"
+	//"fmt"
 	//bio "github.com/crmackay/gobioinfo"
 	sw "github.com/crmackay/switchblade/types"
 	//data "github.com/crmackay/switchblade/research"
@@ -59,19 +59,17 @@ func Process3p(r *sw.Read) {
 
 	still3pContam := true
 
-	pos3p := len(r.Sequence) - 1
-	fmt.Println(pos3p)
-	fmt.Println(len(config.Linker5p))
+	// fmt.Println(pos3p)
+	// fmt.Println(len(config.Linker5p))
 	for still3pContam {
 		// if len(config.Linker5p) < pos3p {
 		// 	still3pContam, pos3p = next3pAlign(r)
 		// 	fmt.Println(string(r.Sequence))
 		// 	fmt.Println(still3pContam, pos3p)
 		// }
-
-		still3pContam, pos3p = next3pAlign(r)
-		fmt.Println(string(r.Sequence))
-		fmt.Println(still3pContam, pos3p)
+		still3pContam, _ = next3pAlign(r)
+		// fmt.Println(string(r.Sequence))
+		// fmt.Println(still3pContam, pos3p)
 	}
 
 	trim3p(r)

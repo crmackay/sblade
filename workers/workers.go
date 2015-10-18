@@ -2,7 +2,7 @@ package workers
 
 import (
 	"encoding/csv"
-	"fmt"
+	//"fmt"
 	bio "github.com/crmackay/gobioinfo"
 	"github.com/crmackay/switchblade/fiveprime"
 	"github.com/crmackay/switchblade/research"
@@ -18,7 +18,7 @@ import (
 // and puts some meta data about the trimming work that was completed in a
 //tab-deliminted format into a
 func Trimmer(rawReads chan *bio.FASTQRead, finishedReads chan<- *bio.FASTQRead, outputData chan<- []string, doneChan chan bool) {
-	fmt.Println("starting worker")
+	//fmt.Println("starting worker")
 	for rawRead := range rawReads {
 
 		inProcessRead := types.NewRead(rawRead)
@@ -29,9 +29,9 @@ func Trimmer(rawReads chan *bio.FASTQRead, finishedReads chan<- *bio.FASTQRead, 
 
 		data := research.GetDataCSV(inProcessRead)
 
-		fmt.Println(inProcessRead.DNASequence.Sequence)
-		fmt.Println(inProcessRead.End5p)
-		fmt.Println(inProcessRead.End3p)
+		//fmt.Println(inProcessRead.DNASequence.Sequence)
+		//fmt.Println(inProcessRead.End5p)
+		//fmt.Println(inProcessRead.End3p)
 		var finishedRead *bio.FASTQRead
 		if inProcessRead.End5p < inProcessRead.End3p {
 			finishedRead = &bio.FASTQRead{
@@ -47,7 +47,7 @@ func Trimmer(rawReads chan *bio.FASTQRead, finishedReads chan<- *bio.FASTQRead, 
 				Misc: inProcessRead.Barcode + ":" + inProcessRead.DegenBases,
 			}
 		} else {
-			fmt.Println(string(inProcessRead.DNASequence.Sequence))
+			//fmt.Println(string(inProcessRead.DNASequence.Sequence))
 			finishedRead = &bio.FASTQRead{
 				DNASequence: bio.DNASequence{
 					Sequence: inProcessRead.DNASequence.Sequence[inProcessRead.End5p:inProcessRead.End5p],
@@ -68,7 +68,7 @@ func Trimmer(rawReads chan *bio.FASTQRead, finishedReads chan<- *bio.FASTQRead, 
 
 	}
 	doneChan <- true
-	fmt.Println("Sending Done")
+	//fmt.Println("Sending Done")
 	return
 }
 
@@ -86,7 +86,7 @@ func ReadWriter(inFile string, outFile string, rawReads chan *bio.FASTQRead, fin
 
 	csvfile, err := os.Create(dataPath + ".csv")
 	if err != nil {
-		fmt.Println("Error:", err)
+		//fmt.Println("Error:", err)
 		return
 	}
 	defer csvfile.Close()
@@ -125,12 +125,10 @@ func ReadWriter(inFile string, outFile string, rawReads chan *bio.FASTQRead, fin
 
 	for read := range finishedReads {
 		doneWriter.Write(*read)
-
-	}
-	for data := range outputData {
+		data := <-outputData
 		dataWriter.WriteAll([][]string{data})
 
 	}
-	doneSignal <- true
+
 	return
 }

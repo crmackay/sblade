@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	bio "github.com/crmackay/gobioinfo"
 	"github.com/crmackay/switchblade/workers"
 	"runtime"
@@ -11,7 +11,7 @@ import (
 /*
 func work (input chan FASTARead, ouput chan FASTARead) {
     //processRead.Process
-    fmt.Println("Starting Worker:")
+    //fmt.Println("Starting Worker:")
 }*/
 
 func main() {
@@ -25,13 +25,15 @@ func main() {
 	runtime.GOMAXPROCS(totalCPUS)
 
 	CPUWorkers := totalCPUS - 1
-	CPUWorkers = 1
+	// CPUWorkers = 1
 	//rawReads := make(chan bio.FASTQRead, 1000)
 
 	//processedReads := make(chan bio.FASTQRead, 1000)
 
 	// TODO set path to input file
-	inFile := "/Users/christophermackay/Desktop/deepseq_data/pir1/hits-clip/working_data/sample_data/fastq/sblade-test/sample_25000_2.fastq"
+	// inFile := "/Users/christophermackay/Desktop/deepseq_data/pir1/hits-clip/working_data/sample_data/fastq/sblade-test/sample_10.fastq"
+
+	inFile := "/Users/christophermackay/Desktop/deepseq_data/pir1/hits-clip/working_data/sample_data/fastq/sblade-test/2014_06_HITS_CLIP_1_2_3_4+PhiX_NoIndex_L003_R1_001.fastq.gz"
 
 	outFile := "/Users/christophermackay/Desktop/deepseq_data/pir1/hits-clip/working_data/sample_data/fastq/sblade-test/output.fastq"
 	// TODO set path to output file
@@ -57,17 +59,17 @@ func main() {
 
 	// wait until the are all done
 	numDones := 0
+	//fmt.Println("numCPUWorkers", CPUWorkers)
 	for numDones < CPUWorkers {
 		<-doneSignal
 		numDones++
 		wg.Done()
-		fmt.Println("Number of Dones: ", numDones)
+		//fmt.Println("Number of Dones: ", numDones)
 	}
 	close(finishedReads)
 	close(outputData)
-	<-doneSignal
 	wg.Done()
 	wg.Wait()
 
-	fmt.Println("this is the main function")
+	//fmt.Println("this is the main function")
 }

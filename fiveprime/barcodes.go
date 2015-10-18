@@ -1,7 +1,7 @@
 package fiveprime
 
 import (
-	"fmt"
+	// "fmt"
 	bio "github.com/crmackay/gobioinfo"
 	config "github.com/crmackay/switchblade/config"
 	sw "github.com/crmackay/switchblade/types"
@@ -195,7 +195,7 @@ func inferBarcode(b string, q []uint8) string {
 	seqProbs := make(map[string]float64)
 
 	for k := range config.Barcodes {
-		fmt.Println(k)
+		// fmt.Println(k)
 		probSeq := float64(1)
 		bcode := []rune(k)
 		for i, elem := range b {
@@ -207,7 +207,7 @@ func inferBarcode(b string, q []uint8) string {
 			}
 
 		}
-		fmt.Println(probSeq)
+		// fmt.Println(probSeq)
 		seqProbs[k] = probSeq
 	}
 
@@ -217,7 +217,7 @@ func inferBarcode(b string, q []uint8) string {
 		denominator += v * config.BarcodeRatios[k]
 
 	}
-	fmt.Println("denominator: ", denominator)
+	// fmt.Println("denominator: ", denominator)
 	bcProbs := make(map[string]float64)
 	for k, v := range seqProbs {
 		// TODO change this to the correct ration (0.2 and 0.3)
@@ -225,7 +225,7 @@ func inferBarcode(b string, q []uint8) string {
 		bcProbs[k] = probBarcodeGivenSeq
 
 	}
-	fmt.Println(bcProbs)
+	// fmt.Println(bcProbs)
 
 	trueBarcode := maxProbBarcode(bcProbs)
 
@@ -248,7 +248,7 @@ func maxProbBarcode(m map[string]float64) string {
 		}
 		i++
 	}
-	fmt.Println(maxK, maxV)
+	// fmt.Println(maxK, maxV)
 	return maxK
 
 }
