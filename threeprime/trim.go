@@ -21,6 +21,9 @@ func next3pAlign(r *sw.Read) (bool, int) {
 		alignTo = r.Aligns3p[num3pAligns-1].QueryStart
 	}
 
+	// TODO: optimization - do a simply test for if the whole linker string is present, and if so
+	//  just cut it off and move one without aligning or doing a probab
+
 	alignment := r.Sequence[:alignTo].SG3pAlign(config.Linker3p.Sequence)
 
 	// func threePLinkerTest(a *bio.PairWiseAlignment, r *bio.FASTQRead, testNum int) bool {}

@@ -1,18 +1,16 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
+	"io"
+	"os"
+	"runtime"
+	"strings"
+	"sync"
+
 	bio "github.com/crmackay/gobioinfo"
 	"github.com/crmackay/switchblade/workers"
-	"runtime"
-	"sync"
 )
-
-/*
-func work (input chan FASTARead, ouput chan FASTARead) {
-    //processRead.Process
-    //fmt.Println("Starting Worker:")
-}*/
 
 func main() {
 
@@ -30,19 +28,50 @@ func main() {
 
 	//processedReads := make(chan bio.FASTQRead, 1000)
 
+	if len(os.Args) != 2 {
+		panic("please provide a single path to a .fastq or .fastq.gz file")
+	}
+
+	inFilePath := os.Args[1]
+
+	// TODO handle gzipped files
+
+	// if filepath.Ext(filePath) == ".gz" {
+	// 	reader, err = gzip.NewReader(file)
+	// } else {
+	// 	reader = file
+	// }
+
+	if strings.HasSuffix(inFilePath, ".fastq") || strings.HasSuffix(inFilePath, ".fastq.gz") {
+		inReader, err := os.Open(inFilePath)
+		if err != nil {
+			fmt.Println("problem reading input")
+		}
+
+		outWriter, err := os.Create(inFilePath + "_trimmed.fastq")
+		if err != nil {
+			fmt.Println("problem creating output file")
+		}
+		processFile(inReader, outWriter, CPUWorkers)
+	} else {
+		panic("please provide a single path to a .fastq or .fastq.gz file")
+	}
+}
+
+// TODO: inFile should be and io.Reader instead
+
+func processFile(inFile io.Reader, outFile io.Writer, numWorkers int) {
+
 	// TODO set path to input file
-	// inFile := "/Users/christophermackay/Desktop/deepseq_data/pir1/hits-clip/working_data/sample_data/fastq/sblade-test/sample_10.fastq"
 
-	inFile := "/Users/christophermackay/Desktop/deepseq_data/pir1/hits-clip/working_data/sample_data/fastq/sblade-test/2014_06_HITS_CLIP_1_2_3_4+PhiX_NoIndex_L003_R1_001.fastq.gz"
-
-	outFile := "/Users/christophermackay/Desktop/deepseq_data/pir1/hits-clip/working_data/sample_data/fastq/sblade-test/output.fastq"
+	// outFile := inFile + "_trimmed.fastq"
 	// TODO set path to output file
 
 	// TODO start file parser
 
-	rawReads := make(chan *bio.FASTQRead, 1000)
-	finishedReads := make(chan *bio.FASTQRead, 1000)
-	outputData := make(chan []string, 1000)
+	rawReads := make(chan *bio.FASTQRead, 100000)
+	finishedReads := make(chan *bio.FASTQRead, 100000)
+	outputData := make(chan []string, 50000)
 	doneSignal := make(chan bool)
 
 	var wg sync.WaitGroup
@@ -52,7 +81,7 @@ func main() {
 	wg.Add(1)
 
 	// start numCPU - 1 number of workers
-	for c := 0; c < CPUWorkers; c++ {
+	for c := 0; c < numWorkers; c++ {
 		go workers.Trimmer(rawReads, finishedReads, outputData, doneSignal)
 		wg.Add(1)
 	}
@@ -60,7 +89,7 @@ func main() {
 	// wait until the are all done
 	numDones := 0
 	//fmt.Println("numCPUWorkers", CPUWorkers)
-	for numDones < CPUWorkers {
+	for numDones < numWorkers {
 		<-doneSignal
 		numDones++
 		wg.Done()
@@ -68,8 +97,9 @@ func main() {
 	}
 	close(finishedReads)
 	close(outputData)
+	<-doneSignal
 	wg.Done()
 	wg.Wait()
 
-	//fmt.Println("this is the main function")
+	fmt.Println("this is the main function being done")
 }

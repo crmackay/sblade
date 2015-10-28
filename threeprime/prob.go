@@ -1,19 +1,17 @@
-/*
-Bayesian probabiliy test for linker contamination
-
-Here we take a pairwise alignment structure produced by
-http://github.com/crmackay/gobioinfo/Align calculate the probabilities of the
-query sequence (the read) being present under two assumptions: (1) that it is a
-contaminant and (2) that it is a random sequence. These probabilities are
-calculated by factoring in sequencing quality data reported by the
-Illumina sequencer, as well as user-defined values for Reverse-Transcriptase
-error rates, and PCR error rates (errors per base-pair). Using Bayes' theorem,
-we are then able to calculate (1) the probability of contamination given the
-subject sequence present in the alignment and (2) the probability of a random
-sequence given the subject sequence present in the alignment. The greater of
-these two probabilities then is taken as being the most likely, and used to
-determine whether the sequence in question is a contaminant or not.
-*/
+// Bayesian probabiliy test for linker contamination
+//
+// Here we take a pairwise alignment structure produced by
+// http://github.com/crmackay/gobioinfo/Align calculate the probabilities of the
+// query sequence (the read) being present under two assumptions: (1) that it is a
+// contaminant and (2) that it is a random sequence. These probabilities are
+// calculated by factoring in sequencing quality data reported by the
+// Illumina sequencer, as well as user-defined values for Reverse-Transcriptase
+// error rates, and PCR error rates (errors per base-pair). Using Bayes' theorem,
+// we are then able to calculate (1) the probability of contamination given the
+// subject sequence present in the alignment and (2) the probability of a random
+// sequence given the subject sequence present in the alignment. The greater of
+// these two probabilities then is taken as being the most likely, and used to
+// determine whether the sequence in question is a contaminant or not.
 
 package threeprime
 
@@ -21,8 +19,9 @@ import (
 	//"fmt"
 	bio "github.com/crmackay/gobioinfo"
 	//sw "github.com/crmackay/switchblade"
-	"github.com/crmackay/switchblade/config"
 	"math"
+
+	"github.com/crmackay/switchblade/config"
 )
 
 /*
@@ -168,17 +167,15 @@ func threePLinkerTest(a bio.PairWiseAlignment, r bio.FASTQRead, testNum int) boo
 
 	// calculate P(Linker|Sequence)
 
-	/*
-		probContam is the *a priori* contaminantion frequency (P(contam))
-		which equals the number of alignments that should have a linker, divided by
-		the number of total alignments.
-
-		by default we assume that the proportion of linker-contaminaned reads is 80%.
-
-		Since every read is aligned until a negative probability test is found, this
-		means that 8 out of 10 reads have a linker, but 8 out of 18 alignments have
-		a linker. Therefore the default value here is 8/18 aprox = 0.444
-	*/
+	// probContam is the *a priori* contaminantion frequency (P(contam))
+	// which equals the number of alignments that should have a linker, divided by
+	// the number of total alignments.
+	//
+	// by default we assume that the proportion of linker-contaminaned reads is 80%.
+	//
+	// Since every read is aligned until a negative probability test is found, this
+	// means that 8 out of 10 reads have a linker, but 8 out of 18 alignments have
+	// a linker. Therefore the default value here is 8/18 aprox = 0.444
 
 	probContam := float64(8) / (math.Pow(10, float64(testNum)) +
 		math.Pow(10, float64(testNum-1))*8 +
