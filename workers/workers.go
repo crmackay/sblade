@@ -10,11 +10,11 @@ import (
 	"github.com/crmackay/switchblade/types"
 )
 
-// Trimmer consumes the raw reads channel, takes each read and enacts a 3'-trim
+// Trim consumes the raw reads channel, takes each read and enacts a 3'-trim
 // action to it, and then puts the trimmed read into the finishedReads channel
 // and puts some meta data about the trimming work that was completed in a
-//tab-deliminted format into a
-func Trimmer(rawReads chan *bio.FASTQRead, finishedReads chan<- *bio.FASTQRead, outputData chan<- []string, doneChan chan bool) {
+// tab-deliminted format into a
+func Trim(rawReads chan *bio.FASTQRead, finishedReads chan<- *bio.FASTQRead, outputData chan<- []string, doneChan chan bool) {
 	fmt.Println("starting worker")
 	for rawRead := range rawReads {
 
@@ -24,68 +24,6 @@ func Trimmer(rawReads chan *bio.FASTQRead, finishedReads chan<- *bio.FASTQRead, 
 
 		fiveprime.Process5p(inProcessRead)
 
-		// data := research.GetDataCSV(inProcessRead)
-
-		//fmt.Println(inProcessRead.DNASequence.Sequence)
-		//fmt.Println(inProcessRead.End5p)
-		//fmt.Println(inProcessRead.End3p)
-		var finishedRead *bio.FASTQRead
-		if inProcessRead.End5p < inProcessRead.End3p {
-			finishedRead = &bio.FASTQRead{
-				DNASequence: bio.DNASequence{
-					Sequence: inProcessRead.DNASequence.Sequence[inProcessRead.End5p:inProcessRead.End3p],
-				},
-				PHRED: bio.PHRED{
-					Encoded:  inProcessRead.PHRED.Encoded[inProcessRead.End5p:inProcessRead.End3p],
-					Decoded:  inProcessRead.PHRED.Decoded[inProcessRead.End5p:inProcessRead.End3p],
-					Encoding: inProcessRead.PHRED.Encoding,
-				},
-				ID:   inProcessRead.ID,
-				Misc: inProcessRead.Barcode + ":" + inProcessRead.DegenBases,
-			}
-		} else {
-			//fmt.Println(string(inProcessRead.DNASequence.Sequence))
-			finishedRead = &bio.FASTQRead{
-				DNASequence: bio.DNASequence{
-					Sequence: inProcessRead.DNASequence.Sequence[inProcessRead.End5p:inProcessRead.End5p],
-				},
-				PHRED: bio.PHRED{
-					Encoded:  inProcessRead.PHRED.Encoded[inProcessRead.End5p:inProcessRead.End5p],
-					Decoded:  inProcessRead.PHRED.Decoded[inProcessRead.End5p:inProcessRead.End5p],
-					Encoding: inProcessRead.PHRED.Encoding,
-				},
-				ID:   inProcessRead.ID,
-				Misc: inProcessRead.Barcode + ":" + inProcessRead.DegenBases,
-			}
-		}
-
-		finishedReads <- finishedRead
-
-		// outputData <- data
-
-	}
-	fmt.Println("Sending Done")
-	doneChan <- true
-	fmt.Println("closing worker")
-	return
-}
-
-func partTimeTrimmer(n int, rawReads chan *bio.FASTQRead, finishedReads chan<- *bio.FASTQRead, outputData chan<- []string) {
-	fmt.Println("starting part-time worker")
-	for i := 0; i < n; i++ {
-		// fmt.Println(i)
-		rawRead := <-rawReads
-		inProcessRead := types.NewRead(rawRead)
-
-		threeprime.Process3p(inProcessRead)
-
-		fiveprime.Process5p(inProcessRead)
-
-		// data := research.GetDataCSV(inProcessRead)
-
-		//fmt.Println(inProcessRead.DNASequence.Sequence)
-		//fmt.Println(inProcessRead.End5p)
-		//fmt.Println(inProcessRead.End3p)
 		var finishedRead *bio.FASTQRead
 		if inProcessRead.End5p < inProcessRead.End3p {
 			finishedRead = &bio.FASTQRead{
@@ -103,31 +41,15 @@ func partTimeTrimmer(n int, rawReads chan *bio.FASTQRead, finishedReads chan<- *
 			finishedReads <- finishedRead
 		}
 
-		// else {
-		// 	//fmt.Println(string(inProcessRead.DNASequence.Sequence))
-		// 	finishedRead = &bio.FASTQRead{
-		// 		DNASequence: bio.DNASequence{
-		// 			Sequence: inProcessRead.DNASequence.Sequence[inProcessRead.End5p:inProcessRead.End5p],
-		// 		},
-		// 		PHRED: bio.PHRED{
-		// 			Encoded:  inProcessRead.PHRED.Encoded[inProcessRead.End5p:inProcessRead.End5p],
-		// 			Decoded:  inProcessRead.PHRED.Decoded[inProcessRead.End5p:inProcessRead.End5p],
-		// 			Encoding: inProcessRead.PHRED.Encoding,
-		// 		},
-		// 		ID:   inProcessRead.ID,
-		// 		Misc: inProcessRead.Barcode + ":" + inProcessRead.DegenBases,
-		// 	}
-		// }
-
-		// outputData <- data
-
 	}
-	fmt.Println("closing part-time worker")
+	fmt.Println("Sending Done")
+	doneChan <- true
+	fmt.Println("closing worker")
 	return
 }
 
-// ReadWriter ..
-func ReadWriter(in io.Reader, out io.Writer, rawReads chan *bio.FASTQRead, finishedReads chan *bio.FASTQRead, outputData chan []string, doneSignal chan bool) {
+// ReadWrite is a . ..
+func ReadWrite(in io.Reader, out io.Writer, rawReads chan *bio.FASTQRead, finishedReads chan *bio.FASTQRead, outputData chan []string, doneSignal chan bool) {
 	fmt.Println("starting ReadWriter")
 
 	reader := bio.NewFASTQScanner(in)
@@ -136,31 +58,16 @@ func ReadWriter(in io.Reader, out io.Writer, rawReads chan *bio.FASTQRead, finis
 	doneWriter := bio.NewFASTQWriter(out)
 	defer doneWriter.Close()
 
-	//
-
-	// dataPath := outFile + "_processing_data"
-	//
-	// csvfile, err := os.Create(dataPath + ".csv")
-	// if err != nil {
-	// 	//fmt.Println("Error:", err)
-	// 	return
-	// }
-	// defer csvfile.Close()
-
-	// dataWriter := csv.NewWriter(csvfile)
-
-	// dataWriter.Comma, _ = utf8.DecodeRuneInString("\t")
-	written := 0
-
 loop:
 	for {
 
 		spaceRawReads := cap(rawReads) - len(rawReads)
-		fmt.Println("spaceRawReads", spaceRawReads)
+		fmt.Println("space on raw reads", spaceRawReads)
 
 		for i := 0; i < 100000; i++ {
+			// fmt.Println(i)
 			newRead, err := reader.NextRead()
-			//fmt.Println("reading", i)
+			// fmt.Println("reading", i)
 			if err != nil {
 				fmt.Println("done reading")
 				close(rawReads)
@@ -168,31 +75,25 @@ loop:
 			}
 			rawReads <- &newRead
 		}
-		// TODO this number should not be hardcoded, and will lead to a deadlock on highly pararllel systems or small files
 
+		// TODO this number should not be hardcoded, and will lead to a deadlock on highly pararllel systems or small files
 		//partTimeTrimmer(20000, rawReads, finishedReads, outputData)
 
 		currChanLen := len(finishedReads)
-		fmt.Println("currChanLen", currChanLen)
-		for i := 0; i < 100000; i++ {
-
+		// if currChanLen == 0 {
+		// 	fmt.Println("waiting...")
+		// 	time.Sleep(5 * time.Second)
+		// }
+		fmt.Println("len of finished reads", currChanLen)
+		for i := 0; i < currChanLen; i++ {
+			// fmt.Println(i)
 			read := <-finishedReads
 			doneWriter.Write(*read)
-			written++
-			//fmt.Println("writing num: ", written)
-			// dataWriter.WriteAll([][]string{<-outputData})
 		}
 
 	}
 	for read := range finishedReads {
-		// fmt.Println(ct)
-		// fmt.Println("here")
-		// fmt.Println(string(read.Sequence))
 		doneWriter.Write(*read)
-		written++
-		//fmt.Println("writing num: ", written)
-		// data := <-outputData
-		// dataWriter.WriteAll([][]string{data})
 	}
 
 	doneSignal <- true
