@@ -53,7 +53,6 @@ func ReadWrite(in io.Reader, out io.Writer, rawReads chan *bio.FASTQRead, finish
 	fmt.Println("starting ReadWriter")
 
 	reader := bio.NewFASTQScanner(in)
-	defer reader.Close()
 
 	doneWriter := bio.NewFASTQWriter(out)
 	defer doneWriter.Close()

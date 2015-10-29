@@ -53,10 +53,10 @@ func TestProcessFile(t *testing.T) {
 		if string(v.Sequence) != string(resultMap[k].Sequence) {
 			t.Error(
 				"expected: \t",
-				string(v.Sequence),
+				string(resultMap[k].Sequence),
 				"\n",
 				"but got: \t\t",
-				string(resultMap[k].Sequence),
+				string(v.Sequence),
 			)
 		}
 	}

@@ -2,17 +2,18 @@ package threeprime
 
 import (
 	//"errors"
-	//"fmt"
+
 	//bio "github.com/crmackay/gobioinfo"
-	sw "github.com/crmackay/switchblade/types"
-	//data "github.com/crmackay/switchblade/research"
+
 	"github.com/crmackay/switchblade/config"
+	sw "github.com/crmackay/switchblade/types"
 )
 
 func next3pAlign(r *sw.Read) (bool, int) {
 	num3pAligns := len(r.Aligns3p)
 	// alignTo defaults to the 3-prime end of the full sequence (len -1 )
 	alignTo := len(r.Sequence)
+	// alignFrom := config.LenFivePrimeLinker
 
 	var isContam bool
 	var pos int
