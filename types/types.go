@@ -1,8 +1,6 @@
 package types
 
 import (
-	"errors"
-	"fmt"
 	bio "github.com/crmackay/gobioinfo"
 	"github.com/crmackay/switchblade/complexity"
 )
@@ -19,11 +17,12 @@ type Alignment struct {
 // a bool field indicated whether the final read passed the complexity filter
 type Read struct {
 	bio.FASTQRead
-	Aligns3p       []Alignment
+	// Aligns3p       []Alignment
 	End3p          int
 	End5p          int
 	Barcode        string
 	DegenBases     string
+	Done           bool
 	FinalSeq       bio.NucleotideSequence
 	IsFinalComplex bool
 	// Align5p      Alignment
@@ -34,39 +33,6 @@ type Read struct {
 func NewRead(f *bio.FASTQRead) (r *Read) {
 	r = &Read{FASTQRead: *f}
 	return r
-}
-
-// Trim uses that three-p alignments and five-p alignments found within the given struct to
-// determine at which base the 3p contaminant starts, the 5p contaminante ends, and the read starts and ends. It then
-// trims the original sequence to those positions, and stores the final read as
-// Read.FinalSeq. Trim returns an error if the alignment arrays are misformed in someway.
-func (r *Read) Trim() error {
-
-	//find the last alignment
-	// trim 3p
-	var err error
-	var cutFrom3p int
-
-	numAligns3p := len(r.Aligns3p)
-	lastAlignContam := r.Aligns3p[numAligns3p-1].IsContam
-
-	switch {
-	case numAligns3p == 0:
-		cutFrom3p = len(r.Sequence)
-		err = errors.New("no alignments were found, something went wrong with the read processing before attempting to trim it")
-	case lastAlignContam == true:
-		cutFrom3p = r.Aligns3p[numAligns3p-1].QueryStart
-	case numAligns3p > 1 && lastAlignContam == false:
-		cutFrom3p = r.Aligns3p[numAligns3p-2].QueryStart
-	}
-
-	for i, elem := range r.Aligns3p {
-		fmt.Println("3paligns list no: ", i, "is: ", elem.QueryStart)
-
-		r.FinalSeq = r.Sequence[:cutFrom3p]
-
-	}
-	return err
 }
 
 // CalcComplex applies the complexity algorithm to the Read.FinalSeq, calculates

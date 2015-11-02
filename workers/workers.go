@@ -20,9 +20,11 @@ func Trim(rawReads chan *bio.FASTQRead, finishedReads chan<- *bio.FASTQRead, out
 
 		inProcessRead := types.NewRead(rawRead)
 
-		threeprime.Process3p(inProcessRead)
-
+		//get the position of the 5p linker
 		fiveprime.Process5p(inProcessRead)
+
+		// find and verify any potential 3p linkers
+		threeprime.Process3p(inProcessRead)
 
 		var finishedRead *bio.FASTQRead
 		if inProcessRead.End5p < inProcessRead.End3p {

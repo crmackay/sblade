@@ -9,6 +9,33 @@ import (
 	sw "github.com/crmackay/switchblade/types"
 )
 
+// REFACTORING:
+// process the read from the 5p end (found first) to then end
+
+func get3pEnd(r *sw.Read) {
+	var isContam bool
+	numTests := 1
+	lastPos := len(r.Sequence)
+	for {
+		alignment := r.Sequence.SG3pAlign(config.Linker3p.Sequence)
+		numTests++
+		// take match and test if for a positive
+		isContam = threePLinkerTest(alignment, r.FASTQRead, numTests)
+
+		if isContam == true {
+			// if YES, align and test again from before that linker
+			// lastPos =
+		} else {
+			// if NO, save 3p end as the start of last match, or the end of read
+			r.End3p = lastPos
+			break
+		}
+
+		// TODO add break if read is too short or 3p is less than 5p or something
+	}
+
+}
+
 func next3pAlign(r *sw.Read) (bool, int) {
 	num3pAligns := len(r.Aligns3p)
 	// alignTo defaults to the 3-prime end of the full sequence (len -1 )
@@ -63,17 +90,9 @@ func Process3p(r *sw.Read) {
 
 	still3pContam := true
 
-	// fmt.Println(pos3p)
-	// fmt.Println(len(config.Linker5p))
 	for still3pContam {
-		// if len(config.Linker5p) < pos3p {
-		// 	still3pContam, pos3p = next3pAlign(r)
-		// 	fmt.Println(string(r.Sequence))
-		// 	fmt.Println(still3pContam, pos3p)
-		// }
+
 		still3pContam, _ = next3pAlign(r)
-		// fmt.Println(string(r.Sequence))
-		// fmt.Println(still3pContam, pos3p)
 	}
 
 	trim3p(r)
