@@ -1,4 +1,5 @@
 # sblade
+[![Build Status](https://travis-ci.org/crmackay/sblade.svg)](https://travis-ci.org/crmackay/sblade) [![Coverage Status](https://coveralls.io/repos/crmackay/sblade/badge.svg?branch=master&service=github)](https://coveralls.io/github/crmackay/sblade?branch=master)
 
 <u>**s**</u>emi-global <u>**B**</u>ayesian <u>**L**</u>inker <u>**A**</u>lignment an<u>**D**</u> <u>**E**</u>xcision
 
