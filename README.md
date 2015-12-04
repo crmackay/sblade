@@ -1,5 +1,5 @@
 # sblade
-a semi-global alignment and bayesian probability based high-throughput sequence adaptor remover, using golang to allow for parallel processing (whether on your laptop or a computer cluster) and easier auditability/reproducability
+a semi-global alignment and bayesian probability based high-throughput sequence adaptor remover, using golang to allow for parallel processing and easier auditability/reproducability
 
 <u>**s**</u>emi-global <u>**B**</u>ayesian <u>**L**</u>inker <u>**A**</u>lignment an<u>**D**</u> <u>**E**</u>xcision
 
