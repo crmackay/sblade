@@ -2,8 +2,9 @@ package threeprime
 
 import (
 	"fmt"
+
 	bio "github.com/crmackay/gobioinfo"
-	//"math"
+	// "math"
 	"bufio"
 	"bytes"
 	"testing"
